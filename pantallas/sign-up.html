@@ -10,6 +10,7 @@
 <body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-sm">
 
+        <!-- Logo -->
         <div class="flex justify-center mb-4">
             <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center">
                 <i class="ti ti-book text-white text-2xl"></i>
@@ -21,6 +22,7 @@
             <p class="text-gray-400 text-sm mt-1">Organiza tus proyectos con éxito</p>
         </div>
 
+        <!-- Campo: correo -->
         <div class="bg-gray-800 rounded-2xl p-4 mb-4">
             <label class="text-gray-400 text-xs uppercase tracking-wide">Correo Electronico</label>
             <div class="mt-1 flex items-center bg-gray-900 rounded-lg px-3 py-2">
@@ -29,6 +31,7 @@
             </div>
         </div>
 
+        <!-- Campo: nombre de usuario -->
         <div class="bg-gray-800 rounded-2xl p-4 mb-4">
             <label class="text-gray-400 text-xs uppercase tracking-wide">Nombre de usuario</label>
             <div class="mt-1 flex items-center bg-gray-900 rounded-lg px-3 py-2">
@@ -37,23 +40,25 @@
             </div>
         </div>
 
+        <!-- Campo: contraseña (con botón de mostrar/ocultar) -->
         <div class="bg-gray-800 rounded-2xl p-4 mb-4">
             <label class="text-gray-400 text-xs uppercase tracking-wide">Contraseña</label>
             <div class="mt-1 flex items-center bg-gray-900 rounded-lg px-3 py-2">
                 <i class="ti ti-lock text-gray-500 mr-2"></i>
                 <input type="password" id="inputContraseña" placeholder="......" class="bg-transparent text-white text-sm w-full outline-none placeholder-gray-500">
-                <i class="ti ti-eye text-gray-500 ml-2 cursor-pointer" id="iconoOjo" onclick="toggleConstraseña()"></i>
+                <i class="ti ti-eye text-gray-500 ml-2 cursor-pointer" id="iconoOjo" onclick="toggleContraseña('inputContraseña', 'iconoOjo')"></i>
             </div>
             <p class="text-gray-500 text-xs mt-2">Mínimo 8 caracteres con letras y números.</p>
         </div>
 
+        <!-- Envía el registro, lógica en app.js -->
         <button id="btnRegistrarse" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 mt-2">
             Registrarse
             <i class="ti ti-user-plus"></i>
         </button>
         <p class="text-center text-gray-400 text-sm mt-4">
             ¿Ya tienes una cuenta?
-            <a href="login.html" class="text-red-500 font-semibold">Inicia sesion</a>
+            <a href="log-in.html" class="text-red-500 font-semibold">Inicia sesion</a>
         </p>
     </div>
 </body>
