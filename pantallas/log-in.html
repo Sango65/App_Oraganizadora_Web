@@ -10,10 +10,15 @@
 <body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-sm">
 
+        <!-- Splash -->
+         <div id="splash" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50 transition-opacity duration-700">
+            <img src="../images/Logo-splash.png" alt="Logo de la app" class="w-32 h-auto">
+         </div>
+
         <!-- Logo -->
         <div class="flex justify-center mb-4">
-            <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center">
-                <i class="ti ti-book text-white text-2xl"></i>
+            <div class="flex justify-center mb-4">
+                <img src="../images/Logo.png" alt="Logo de Guio" class="w-16 h-auto">
             </div>
         </div>
 
@@ -55,5 +60,13 @@
     </div>
 
     <script src="../JS/app.js"></script>
+    <script>
+        setTimeout(function () {
+            document.getElementById("splash").classList.add("opacity-0");
+            setTimeout(function () {
+                document.getElementById("splash").remove();
+            }, 700);
+        }, 1300);
+    </script>
 </body>
 </html>

@@ -78,6 +78,18 @@ if (btnIniciarSesion) { // Se usa este if porque no existe en sign-up.html
         }
 
         localStorage.setItem("sesionActiva", correo); // usuario logueado
-        alert("Bienvenido, " + usuarioEncontrado.nombre);
+        window.location.href = "mis-proyectos.html"
     });
+}
+
+const nombreHeader = document.getElementById("nombreUsuarioHeader");
+
+if (nombreHeader) {
+    const correoActivo = localStorage.getItem("sesionActiva");
+    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    const usuario = usuarios.find(u => u.correo === correoActivo);
+
+    if (usuario) {
+        nombreHeader.textContent = usuario.nombre;
+    }
 }
