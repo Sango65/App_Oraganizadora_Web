@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis proyectos</title>
+    <title>GUIO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
@@ -19,9 +19,17 @@
         <p id="subtituloProyectos" class="text-gray-400 text-sm mt-1">Tienes 0 proyectos activos</p> 
      </div>
 
-     <!-- contenido (lista de proyectos) -->
+    <!-- contenido (lista de proyectos) -->
     <div class="flex-1 px-4 pb-20">
-        <!-- aquí irá la lista de proyectos en el siguiente paso -->
+        <div id="estadoVacio" class="flex flex-col items-center justify-center h-full text-center px-6">
+            <i class="ti ti-folder-open text-gray-600 text-5xl mb-4"></i>
+            <h2 class="text-white font-semibold mb-2">Aún no tienes proyectos</h2>
+            <p class="text-gray-400 text-sm">Crea tu primer proyecto.</p>
+        </div>
+        
+        <div id="listaProyectos" class="space-y-3 hidden">
+            <!-- Aquí se van a insertar las tarjetas de proyectos con JavaScript -->
+        </div>
     </div>
 
      <!-- tab-bar-inferior -->
@@ -39,6 +47,34 @@
             <span class="text-xs mt-1">Acerca de</span>
         </a>
       </nav>
+
+      <button id="btnNuevoProyecto" class="fixed bottom-20 right-4 w-14 h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg ">
+        <i class="ti ti-plus text-white text-2xl"></i>
+      </button>
+
+      <!-- Modal: Nuevo proyecto (oculto por defecto) -->
+        <div id="modalNuevoProyecto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-end justify-center z-50">
+            <div class="w-full max-w-sm bg-gray-800 rounded-t-2xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-white font-semibold">Nuevo proyecto</h2>
+                    <i class="ti ti-x text-gray-400 cursor-pointer" id="btnCerrarModal"></i>
+                </div>
+
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Nombre del proyecto</label>
+                <input type="text" id="inputNombreProyecto" placeholder="Ej. Proyecto final" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
+
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Desarrollado por</label>
+                <input type="text" id="inputDesarrolladoPor" placeholder="Ej. Nombre del equipo" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
+
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Materia</label>
+                <input type="text" id="inputMateria" placeholder="Ej. Nombre de la materia" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
+
+                <div class="flex gap-2">
+                    <button id="btnCancelarProyecto" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
+                    <button id="btnCrearProyecto" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Crear</button>
+                </div>
+            </div>
+        </div>
     <script src="../JS/app.js"></script>
 </body>
 </html>

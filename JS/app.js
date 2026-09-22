@@ -21,6 +21,40 @@ function validarContraseña(contraseña) {
     return contraseña.length >= 8 && tieneLetras && tieneNumeros;
 }
 
+// Actualiza los requirimientos de la contraseña en tiempo real
+const inputPassRegistro = document.getElementById("inputContraseña");
+
+if (inputPassRegistro) {
+    inputPassRegistro.addEventListener("input", function () {
+        const valor = inputPassRegistro.value;
+        const cumpleLongitud = valor.length >= 8;
+        const cumpleLetras = /[a-zA-Z]/.test(valor);
+        const cumpleNumeros = /[0-9]/.test(valor);
+
+        marcarRequisito("reqLongitud", cumpleLongitud);
+        marcarRequisito("reqLetras", cumpleLetras);
+        marcarRequisito("reqNumeros", cumpleNumeros);
+    })
+}
+
+// Cambia el color y el ícono de un requisito según se cumpla o no
+function marcarRequisito(id, cumplido) {
+    const elemento = document.getElementById(id);
+    const icono = elemento.querySelector("i");
+
+    if (cumplido) {
+        elemento.classList.remove("text-gray-500");
+        elemento.classList.add("text-green-500");
+        icono.classList.remove("ti-circle");
+        icono.classList.add("ti-circle-check-filled");
+    } else {
+        elemento.classList.remove("text-green-500");
+        elemento.classList.add("text-gray-500");
+        icono.classList.remove("ti-circle-check-filled");
+        icono.classList.add("ti-circle");
+    }
+}
+
 // Registro (sign-up.html)
 const btnRegistrarse = document.getElementById("btnRegistrarse");
 
@@ -92,4 +126,80 @@ if (nombreHeader) {
     if (usuario) {
         nombreHeader.textContent = usuario.nombre;
     }
+}
+
+// // Muestra el estado vacío o la lista, según si hay proyectos guardados
+function actualizarVistaProyectos() {
+    const estadoVacio = document.getElementById("estadoVacio");
+    if (!estadoVacio) return;
+
+    let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
+    const listaProyectos = document.getElementById("listaProyectos");
+
+    if (proyectos.length === 0) {
+        estadoVacio.classList.remove("hidden");
+        listaProyectos.classList.add("hidden");
+    } else {
+        estadoVacio.classList.add("hidden");
+        listaProyectos.classList.remove("hidden");
+    }
+}
+
+actualizarVistaProyectos();
+
+// --- Modal Nuevo Proyecto (abrir/cerrar) ---
+const btnNuevoProyecto = document.getElementById("btnNuevoProyecto");
+const modalNuevoProyecto = document.getElementById("modalNuevoProyecto");
+const btnCerrarModal = document.getElementById("btnCerrarModal");
+const btnCancelarProyecto = document.getElementById("btnCancelarProyecto");
+
+if (btnNuevoProyecto) {
+    btnNuevoProyecto.addEventListener("click", function () {
+        modalNuevoProyecto.classList.remove("hidden");
+        modalNuevoProyecto.classList.add("flex");
+    });
+
+    function cerrarModal() {
+        modalNuevoProyecto.classList.add("hidden");
+        modalNuevoProyecto.classList.remove("flex");
+    }
+
+    btnCerrarModal.addEventListener("click", cerrarModal);
+    btnCancelarProyecto.addEventListener("click", cerrarModal);
+}
+
+const btnCrearProyecto = document.getElementById("btnCrearProyecto");
+
+if (btnCrearProyecto) {
+    btnCrearProyecto.addEventListener("click", function () {
+        const nombre = document.getElementById("inputNombreProyecto").value;
+        const desarrolladoPor = document.getElementById("inputDesarrolladoPor").value;
+        const materia = document.getElementById("inputMateria").value;
+
+        if (nombre === "" || desarrolladoPor === "" || materia === "") {
+            alert("Por favor, llena todos los campos");
+            return;
+        }
+
+        let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
+
+        const nuevoProyecto = {
+            id: Date.now(),
+            nombre: nombre,
+            desarrolladoPor: desarrolladoPor,
+            materia: materia,
+            fechaCreacion: new Date().toLocaleDateString()
+        };
+
+        proyectos.push(nuevoProyecto);
+        localStorage.setItem("proyectos", JSON.stringify(proyectos));
+
+        // Limpiar los campos para la próxima vez que abran el modal
+        document.getElementById("inputNombreProyecto").value = "";
+        document.getElementById("inputDesarrolladoPor").value = "";
+        document.getElementById("inputMateria").value = "";
+
+        cerrarModal();
+        actualizarVistaProyectos();
+    });
 }

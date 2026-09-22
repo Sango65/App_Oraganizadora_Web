@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>GUIO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
@@ -48,7 +48,17 @@
                 <input type="password" id="inputContraseña" placeholder="......" class="bg-transparent text-white text-sm w-full outline-none placeholder-gray-500">
                 <i class="ti ti-eye text-gray-500 ml-2 cursor-pointer" id="iconoOjo" onclick="toggleContraseña('inputContraseña', 'iconoOjo')"></i>
             </div>
-            <p class="text-gray-500 text-xs mt-2">Mínimo 8 caracteres con letras y números.</p>
+            <div class="mt-2 space-y-1">
+                <p id="reqLongitud" class="text-gray-500 text-xs flex items-center gap-1">
+                    <i class="ti ti-circle text-xs"></i> Mínimo 8 caracteres
+                </p>
+                <p id="reqLetras" class="text-gray-500 text-xs flex items-center gap-1">
+                    <i class="ti ti-circle text-xs"></i> Al menos una letra
+                </p>
+                <p id="reqNumeros" class="text-gray-500 text-xs flex items-center gap-1">
+                    <i class="ti ti-circle text-xs"></i> Al menos un número
+                </p>
+            </div>
         </div>
 
         <!-- Envía el registro, lógica en app.js -->
