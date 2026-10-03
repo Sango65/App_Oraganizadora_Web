@@ -16,6 +16,7 @@
             <span id="nombreUsuarioHeader" class="text-gray-400 text-base">Usuario</span>
         </div>
         <h1 class="text-white text-2xl font-semibold">Guía de tareas</h1>
+        <p class="text-gray-400 text-xs uppercase tracking-wider mt-1">Gestion de entregables</p>
     </div>
 
     <!-- contenido (proyectos con sus fases) -->
@@ -51,6 +52,11 @@
             </div>
         </div>
     </div>
-    <script src="../JS/app.js"></script>
+    <div id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" role="status" aria-live="polite" aria-label="Cargando pantalla">
+        <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-red-500"></div>
+    </div>
+    <script src="../JS/utilidades.js"></script>
+    <script src="../JS/sesion.js"></script>
+    <script src="../JS/guia.js"></script>
 </body>
 </html>

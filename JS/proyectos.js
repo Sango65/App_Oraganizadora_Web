@@ -1,140 +1,3 @@
-// Muestra/oculta la contraseña y cambia el ícono del ojo
-function toggleContraseña(idInput, idIcono) {
-  const input = document.getElementById(idInput);
-  const icono = document.getElementById(idIcono);
-
-  if (input.type === "password") {
-    input.type = "text";
-    icono.classList.remove("ti-eye");
-    icono.classList.add("ti-eye-off");
-  } else {
-    input.type = "password";
-    icono.classList.remove("ti-eye-off");
-    icono.classList.add("ti-eye");
-  }
-}
-
-// Mínimo 8 caracteres, con letras y números
-function validarContraseña(contraseña) {
-    const tieneLetras = /[a-zA-Z]/.test(contraseña);
-    const tieneNumeros = /[0-9]/.test(contraseña);
-    return contraseña.length >= 8 && tieneLetras && tieneNumeros;
-}
-
-// Actualiza los requirimientos de la contraseña en tiempo real
-const inputPassRegistro = document.getElementById("inputContraseña");
-
-if (inputPassRegistro) {
-    inputPassRegistro.addEventListener("input", function () {
-        const valor = inputPassRegistro.value;
-        const cumpleLongitud = valor.length >= 8;
-        const cumpleLetras = /[a-zA-Z]/.test(valor);
-        const cumpleNumeros = /[0-9]/.test(valor);
-
-        marcarRequisito("reqLongitud", cumpleLongitud);
-        marcarRequisito("reqLetras", cumpleLetras);
-        marcarRequisito("reqNumeros", cumpleNumeros);
-    })
-}
-
-// Cambia el color y el ícono de un requisito según se cumpla o no
-function marcarRequisito(id, cumplido) {
-    const elemento = document.getElementById(id);
-    const icono = elemento.querySelector("i");
-
-    if (cumplido) {
-        elemento.classList.remove("text-gray-500");
-        elemento.classList.add("text-green-500");
-        icono.classList.remove("ti-circle");
-        icono.classList.add("ti-circle-check-filled");
-    } else {
-        elemento.classList.remove("text-green-500");
-        elemento.classList.add("text-gray-500");
-        icono.classList.remove("ti-circle-check-filled");
-        icono.classList.add("ti-circle");
-    }
-}
-
-// Registro (sign-up.html)
-const btnRegistrarse = document.getElementById("btnRegistrarse");
-
-if (btnRegistrarse) { // Se usa este if porque no existe en log-in.html
-    btnRegistrarse.addEventListener("click", function () {
-        const correo = document.querySelector('input[type="email"]').value;
-        const nombre = document.querySelector('input[type="text"]').value;
-        const contraseña = document.getElementById("inputContraseña").value;
-
-        if (correo === "" || nombre === "" || contraseña === "") {
-            alert("Por favor, llena todos los campos");
-            return;
-        }
-
-        if (!validarContraseña(contraseña)) {
-            alert("La contraseña debe tener mínimo 8 caracteres con letras y números");
-            return;
-        }
-
-        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-        const yaExiste = usuarios.some(u => u.correo === correo); // evita duplicados
-        if (yaExiste) {
-            alert("Ese correo ya esta registrado");
-            return;
-        }
-
-        usuarios.push({correo: correo, nombre: nombre, contraseña: contraseña});
-        localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-        alert("Registro exitoso");
-        window.location.href = "log-in.html";
-    });
-}
-
-// --- Login (log-in.html) ---
-const btnIniciarSesion = document.getElementById("btnIniciarSesion");
-
-if (btnIniciarSesion) { // Se usa este if porque no existe en sign-up.html
-    btnIniciarSesion.addEventListener("click", function () {
-        const correo = document.querySelector('input[type="email"]').value;
-        const contraseña = document.getElementById("inputContraseñaLogin").value;
-
-        if (correo === "" || contraseña === "") {
-            alert("Por favor, llena todos los campos");
-            return;
-        }
-
-        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-        const usuarioEncontrado = usuarios.find(u => u.correo === correo && u.contraseña === contraseña);
-
-        if (!usuarioEncontrado) {
-            alert("Correo o contraseña incorrectos");
-            return;
-        }
-
-        localStorage.setItem("sesionActiva", correo); // usuario logueado
-        window.location.href = "mis-proyectos.html"
-    });
-}
-
-const nombreHeader = document.getElementById("nombreUsuarioHeader");
-
-if (nombreHeader) {
-    const correoActivo = localStorage.getItem("sesionActiva");
-    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const usuario = usuarios.find(u => u.correo === correoActivo);
-
-    if (usuario) {
-        nombreHeader.textContent = usuario.nombre;
-    }
-}
-
-// Convierte texto en HTML seguro, evitando que se ejecute código malicioso
-function escaparHTML(texto) {
-    const div = document.createElement("div");
-    div.textContent = texto;
-    return div.innerHTML;
-}
-
 function actualizarVistaProyectos() {
     const estadoVacio = document.getElementById("estadoVacio");
     if (!estadoVacio) return;
@@ -203,7 +66,7 @@ function actualizarVistaProyectos() {
     });
 
     listaProyectos.innerHTML = html;
-    }
+}
 
 actualizarVistaProyectos();
 
@@ -249,31 +112,34 @@ function cerrarModalEditar() {
     idProyectoAEditar = null;
 }
 
-document.getElementById("btnCerrarModalEditar").addEventListener("click", cerrarModalEditar);
-document.getElementById("btnCancelarEditar").addEventListener("click", cerrarModalEditar);
+const btnCerrarModalEditar = document.getElementById("btnCerrarModalEditar");
 
-document.getElementById("btnConfirmarEditar").addEventListener("click", function () {
-    const nombre = document.getElementById("inputEditarNombre").value;
-    const desarrolladoPor = document.getElementById("inputEditarDesarrolladoPor").value;
-    const materia = document.getElementById("inputEditarMateria").value;
+if (btnCerrarModalEditar) {
+    btnCerrarModalEditar.addEventListener("click", cerrarModalEditar);
+    document.getElementById("btnCancelarEditar").addEventListener("click", cerrarModalEditar);
 
-    if (nombre.trim() === "" || desarrolladoPor.trim() === "" || materia.trim() === "") {
-        alert("Por favor, llena todos los campos");
-        return;
-    }
+    document.getElementById("btnConfirmarEditar").addEventListener("click", function () {
+        const nombre = document.getElementById("inputEditarNombre").value;
+        const desarrolladoPor = document.getElementById("inputEditarDesarrolladoPor").value;
+        const materia = document.getElementById("inputEditarMateria").value;
 
-    let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
-    const proyecto = proyectos.find(p => p.id === idProyectoAEditar);
+        if (nombre.trim() === "" || desarrolladoPor.trim() === "" || materia.trim() === "") {
+            alert("Por favor, llena todos los campos");
+            return;
+        }
 
-    proyecto.nombre = nombre;
-    proyecto.desarrolladoPor = desarrolladoPor;
-    proyecto.materia = materia;
+        let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
+        const proyecto = proyectos.find(p => p.id === idProyectoAEditar);
 
-    localStorage.setItem("proyectos", JSON.stringify(proyectos));
-    cerrarModalEditar();
-    actualizarVistaProyectos();
-});
+        proyecto.nombre = nombre;
+        proyecto.desarrolladoPor = desarrolladoPor;
+        proyecto.materia = materia;
 
+        localStorage.setItem("proyectos", JSON.stringify(proyectos));
+        cerrarModalEditar();
+        actualizarVistaProyectos();
+    });
+}
 
 // Elimina un proyecto con confirmacion previa
 function eliminarProyecto(id) {
@@ -294,6 +160,93 @@ const btnCerrarModal = document.getElementById("btnCerrarModal");
 const btnCancelarProyecto = document.getElementById("btnCancelarProyecto");
 
 if (btnNuevoProyecto) {
+    const clavePosicionBoton = "posicionBotonNuevoProyecto";
+    let inicioArrastre = null;
+    let arrastreReciente = false;
+
+    function limitarPosicionBoton(x, y) {
+        const maxX = window.innerWidth - btnNuevoProyecto.offsetWidth;
+        const maxY = window.innerHeight - btnNuevoProyecto.offsetHeight;
+
+        return {
+            x: Math.max(0, Math.min(x, maxX)),
+            y: Math.max(0, Math.min(y, maxY))
+        };
+    }
+
+    function colocarBoton(x, y) {
+        const posicion = limitarPosicionBoton(x, y);
+        btnNuevoProyecto.style.left = posicion.x + "px";
+        btnNuevoProyecto.style.top = posicion.y + "px";
+        btnNuevoProyecto.style.right = "auto";
+        btnNuevoProyecto.style.bottom = "auto";
+        return posicion;
+    }
+
+    const posicionGuardada = localStorage.getItem(clavePosicionBoton);
+
+    if (posicionGuardada) {
+        const [xGuardado, yGuardado] = posicionGuardada.split(",").map(Number);
+
+        if (Number.isFinite(xGuardado) && Number.isFinite(yGuardado)) {
+            colocarBoton(xGuardado, yGuardado);
+        }
+    }
+
+    btnNuevoProyecto.addEventListener("pointerdown", function (evento) {
+        if (evento.button !== 0) return;
+
+        const rect = btnNuevoProyecto.getBoundingClientRect();
+        inicioArrastre = {
+            pointerId: evento.pointerId,
+            startX: evento.clientX,
+            startY: evento.clientY,
+            left: rect.left,
+            top: rect.top,
+            seMovio: false
+        };
+        btnNuevoProyecto.setPointerCapture(evento.pointerId);
+    });
+
+    btnNuevoProyecto.addEventListener("pointermove", function (evento) {
+        if (!inicioArrastre || evento.pointerId !== inicioArrastre.pointerId) return;
+
+        const deltaX = evento.clientX - inicioArrastre.startX;
+        const deltaY = evento.clientY - inicioArrastre.startY;
+
+        if (!inicioArrastre.seMovio && Math.hypot(deltaX, deltaY) < 5) return;
+
+        inicioArrastre.seMovio = true;
+        evento.preventDefault();
+
+        const posicion = colocarBoton(inicioArrastre.left + deltaX, inicioArrastre.top + deltaY);
+        localStorage.setItem(clavePosicionBoton, posicion.x + "," + posicion.y);
+    });
+
+    function terminarArrastre(evento) {
+        if (!inicioArrastre || evento.pointerId !== inicioArrastre.pointerId) return;
+
+        arrastreReciente = inicioArrastre.seMovio;
+        inicioArrastre = null;
+    }
+
+    btnNuevoProyecto.addEventListener("pointerup", terminarArrastre);
+    btnNuevoProyecto.addEventListener("pointercancel", terminarArrastre);
+
+    btnNuevoProyecto.addEventListener("click", function (evento) {
+        if (!arrastreReciente) return;
+
+        evento.preventDefault();
+        evento.stopImmediatePropagation();
+        arrastreReciente = false;
+    }, true);
+
+    window.addEventListener("resize", function () {
+        const rect = btnNuevoProyecto.getBoundingClientRect();
+        const posicion = colocarBoton(rect.left, rect.top);
+        localStorage.setItem(clavePosicionBoton, posicion.x + "," + posicion.y);
+    });
+
     btnNuevoProyecto.addEventListener("click", function () {
         modalNuevoProyecto.classList.remove("hidden");
         modalNuevoProyecto.classList.add("flex");
@@ -335,6 +288,21 @@ if (btnCrearProyecto) {
         proyectos.push(nuevoProyecto);
         localStorage.setItem("proyectos", JSON.stringify(proyectos));
 
+        // Siembra ñas 3 fases por defecto para este nuevo proyecto
+        let fases = JSON.parse(localStorage.getItem("fases")) || [];
+
+        const fasesPorDefecto = ["Inicio", "Desarrollo", "Cierre"];
+        fasesPorDefecto.forEach(function (nombreFase, indice) {
+            fases.push({
+                id: Date.now() + indice,
+                nombre: nombreFase,
+                orden: indice,
+                proyectoId: nuevoProyecto.id
+            });
+        });
+
+        localStorage.setItem("fases", JSON.stringify(fases));
+
         // Limpiar los campos para la próxima vez que abran el modal
         document.getElementById("inputNombreProyecto").value = "";
         document.getElementById("inputDesarrolladoPor").value = "";
@@ -342,27 +310,6 @@ if (btnCrearProyecto) {
 
         cerrarModal();
         actualizarVistaProyectos();
-    });
-}
-
-// Abre el modal de confirmación al tocar el nombre de usuario
-const btnCerrarSesion = document.getElementById("btnCerrarSesion");
-const modalCerrarSesion = document.getElementById("modalCerrarSesion");
-
-if (btnCerrarSesion) {
-    btnCerrarSesion.addEventListener("click", function () {
-        modalCerrarSesion.classList.remove("hidden");
-        modalCerrarSesion.classList.add("flex");
-    });
-
-    document.getElementById("btnCancelarCerrarSesion").addEventListener("click", function () {
-        modalCerrarSesion.classList.add("hidden");
-        modalCerrarSesion.classList.remove("flex");
-    });
-
-    document.getElementById("btnConfirmarCerrarSesion").addEventListener("click", function () {
-        localStorage.removeItem("sesionActiva");
-        window.location.href = "log-in.html";
     });
 }
 
@@ -388,44 +335,3 @@ function convertirFechaAntigua(fechaTexto) {
     const partes = fechaTexto.split("/");
     return new Date(partes[2], partes[1] - 1, partes[0]).getTime();
 }
-
-// Dibuja los proyectos como rectángulos desplegables en Guía de tareas
-function actualizarVistaGuia() {
-    const contenedorGuia = document.getElementById("contenedorGuia");
-    if (!contenedorGuia) return;
-
-    let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
-
-    contenedorGuia.innerHTML = proyectos.map(function (proyecto) {
-        return `
-            <div class="bg-gray-800 rounded-2xl mb-3 overflow-hidden">
-                <div class="flex items-center justify-between p-4 cursor-pointer" onclick="toggleFasesProyecto(${proyecto.id})">
-                    <div class="flex items-center gap-2">
-                        <i class="ti ti-folder text-red-500"></i>
-                        <div>
-                            <p class="text-gray-400 text-xs uppercase">Ver fases de:</p>
-                            <p class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</p>
-                        </div>
-                    </div>
-                    <i id="flecha-${proyecto.id}" class="ti ti-chevron-down text-gray-400"></i>
-                </div>
-
-                <div id="fases-${proyecto.id}" class="hidden px-4 pb-4">
-                    <p class="text-gray-500 text-xs">Aquí irán las fases del proyecto</p>
-                </div>
-            </div>
-        `;
-    }).join("");
-}
-
-// Expande/colapsa las fases de un proyecto específico
-function toggleFasesProyecto(id) {
-    const fases = document.getElementById("fases-" + id);
-    const flecha = document.getElementById("flecha-" + id);
-
-    fases.classList.toggle("hidden");
-    flecha.classList.toggle("ti-chevron-down");
-    flecha.classList.toggle("ti-chevron-up");
-}
-
-actualizarVistaGuia();

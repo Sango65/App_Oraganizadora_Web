@@ -44,7 +44,7 @@
         </div>
         
         <div id="listaProyectos" class="space-y-3 hidden">
-            <!-- Este div se llena dinámicamente desde app.js (función actualizarVistaProyectos) -->
+            <!-- Este div se llena dinámicamente desde proyectos.js -->
         </div>
     </div>
 
@@ -64,7 +64,7 @@
         </a>
       </nav>
 
-      <button id="btnNuevoProyecto" class="fixed bottom-20 right-4 w-14 h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg ">
+      <button id="btnNuevoProyecto" class="fixed bottom-20 right-4 w-14 h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg cursor-grab active:cursor-grabbing touch-none">
         <i class="ti ti-plus text-white text-2xl"></i>
       </button>
 
@@ -128,6 +128,11 @@
                 </div>
             </div>
         </div>
-    <script src="../JS/app.js"></script>
+    <div id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" role="status" aria-live="polite" aria-label="Cargando pantalla">
+        <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-red-500"></div>
+    </div>
+    <script src="../JS/utilidades.js"></script>
+    <script src="../JS/sesion.js"></script>
+    <script src="../JS/proyectos.js"></script>
 </body>
 </html>
