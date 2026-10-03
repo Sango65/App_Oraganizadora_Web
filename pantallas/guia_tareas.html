@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de tareas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+</head>
+<body class="bg-gray-900 h-screen flex flex-col overflow-hidden">
+
+    <!-- header -->
+    <div class="p-4 pb-2">
+        <div id="btnCerrarSesion" class="flex items-center gap-2 mb-3 cursor-pointer w-fit">
+            <i class="ti ti-user-circle text-gray-400 text-2xl"></i>
+            <span id="nombreUsuarioHeader" class="text-gray-400 text-base">Usuario</span>
+        </div>
+        <h1 class="text-white text-2xl font-semibold">Guía de tareas</h1>
+    </div>
+
+    <!-- contenido (proyectos con sus fases) -->
+    <div id="contenedorGuia" class="flex-1 px-4 pb-20 overflow-y-auto">
+        <!-- Aquí se van a insertar los proyectos con JavaScript -->
+    </div>
+
+    <!-- tab bar inferior -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around py-2">
+        <a href="mis-proyectos.html" class="flex flex-col items-center text-gray-400">
+            <i class="ti ti-folder text-xl"></i>
+            <span class="text-xs mt-1">Proyectos</span>
+        </a>
+        <a href="guia-tareas.html" class="flex flex-col items-center text-red-500">
+            <i class="ti ti-list-check text-xl"></i>
+            <span class="text-xs mt-1">Guía</span>
+        </a>
+        <a href="acerca-de.html" class="flex flex-col items-center text-gray-400">
+            <i class="ti ti-info-circle text-xl"></i>
+            <span class="text-xs mt-1">Acerca de</span>
+        </a>
+    </nav>
+
+    <!-- Modal: Confirmar cierre de sesión (oculto por defecto) -->
+    <div id="modalCerrarSesion" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="w-full max-w-sm mx-4 bg-gray-800 rounded-2xl p-5">
+            <h2 class="text-white font-semibold mb-2">Cerrar sesión</h2>
+            <p class="text-gray-400 text-sm mb-5">¿Estás seguro que deseas cerrar sesión?</p>
+
+            <div class="flex gap-2">
+                <button id="btnCancelarCerrarSesion" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
+                <button id="btnConfirmarCerrarSesion" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Cerrar sesión</button>
+            </div>
+        </div>
+    </div>
+    <script src="../JS/app.js"></script>
+</body>
+</html>

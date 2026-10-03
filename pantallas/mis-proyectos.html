@@ -10,14 +10,30 @@
 <body class="bg-gray-900 min-h-screen flex flex-col">
 
     <!-- header -->
-     <div class="p-4 pb-2">
-        <div class="flex items-center gap-2 mb-3">
-            <i class="ti ti-user-circle text-gray-400 text-lg"></i>
-            <span id="nombreUsuarioHeader" class="text-gray-400 text-sm">Usuario</span>
+    <div class="p-4 pb-2">
+    <div id="btnCerrarSesion" class="flex items-center gap-2 mb-3 cursor-pointer w-fit">
+        <i class="ti ti-user-circle text-gray-400 text-2xl"></i>
+        <span id="nombreUsuarioHeader" class="text-gray-400 text-base">Usuario</span>
+    </div>
+        <div class="flex items-center gap-2">
+            <h1 class="text-white text-2xl font-semibold">Mis proyectos</h1>
+            <i class="ti ti-folder text-gray-400 text-xl"></i>
         </div>
-        <h1 class="text-white text-2xl font-semibold">Mis proyectos</h1>
-        <p id="subtituloProyectos" class="text-gray-400 text-sm mt-1">Tienes 0 proyectos activos</p> 
-     </div>
+    </div>
+    
+    <!-- Contadores de proyectos -->
+    <div class="flex gap-3 px-4 mb-4">
+        <div class="flex-1 bg-gray-800 rounded-2xl p-2">
+            <i class="ti ti-circle-check text-green-500 text-base"></i>
+            <p id="contadorTerminados" class="text-white text-lg font-bold mt-0.5">0</p>
+            <p class="text-gray-400 text-[10px] uppercase leading-tight">Proyectos terminados</p>
+        </div>
+        <div class="flex-1 bg-gray-800 rounded-2xl p-2">
+            <i class="ti ti-clock text-red-500 text-base"></i>
+            <p id="contadorEnCurso" class="text-white text-lg font-bold mt-0.5">0</p>
+            <p class="text-gray-400 text-[10px] uppercase leading-tight">Proyectos en curso</p>
+        </div>
+    </div>
 
     <!-- contenido (lista de proyectos) -->
     <div class="flex-1 px-4 pb-20">
@@ -28,7 +44,7 @@
         </div>
         
         <div id="listaProyectos" class="space-y-3 hidden">
-            <!-- Aquí se van a insertar las tarjetas de proyectos con JavaScript -->
+            <!-- Este div se llena dinámicamente desde app.js (función actualizarVistaProyectos) -->
         </div>
     </div>
 
@@ -63,7 +79,7 @@
                 <label class="text-gray-400 text-xs uppercase tracking-wide">Nombre del proyecto</label>
                 <input type="text" id="inputNombreProyecto" placeholder="Ej. Proyecto final" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Desarrollado por</label>
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Estudiante/s</label>
                 <input type="text" id="inputDesarrolladoPor" placeholder="Ej. Nombre del equipo" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
                 <label class="text-gray-400 text-xs uppercase tracking-wide">Materia</label>
@@ -72,6 +88,43 @@
                 <div class="flex gap-2">
                     <button id="btnCancelarProyecto" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
                     <button id="btnCrearProyecto" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Crear</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Editar proyecto (oculto por defecto) -->
+        <div id="modalEditar" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+            <div class="w-full max-w-sm mx-4 bg-gray-800 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-white font-semibold">Editar proyecto</h2>
+                    <i class="ti ti-x text-gray-400 cursor-pointer" id="btnCerrarModalEditar"></i>
+                </div>
+
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Cambiar nombre del proyecto</label>
+                <input type="text" id="inputEditarNombre" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
+
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Cambiar estudiante/s</label>
+                <input type="text" id="inputEditarDesarrolladoPor" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
+
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Cambiar materia</label>
+                <input type="text" id="inputEditarMateria" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-4 outline-none">
+
+                <div class="flex gap-2">
+                    <button id="btnCancelarEditar" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
+                    <button id="btnConfirmarEditar" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Confirmar cierre de sesión (oculto por defecto) -->
+        <div id="modalCerrarSesion" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+            <div class="w-full max-w-sm mx-4 bg-gray-800 rounded-2xl p-5">
+                <h2 class="text-white font-semibold mb-2">Cerrar sesión</h2>
+                <p class="text-gray-400 text-sm mb-5">¿Estás seguro que deseas cerrar sesión?</p>
+
+                <div class="flex gap-2">
+                    <button id="btnCancelarCerrarSesion" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
+                    <button id="btnConfirmarCerrarSesion" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Cerrar sesión</button>
                 </div>
             </div>
         </div>
