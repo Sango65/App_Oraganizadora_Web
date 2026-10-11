@@ -56,12 +56,10 @@ function marcarRequisito(id, cumplido) {
 }
 
 // Registro (sign-up.html)
-const btnRegistrarse = document.getElementById("btnRegistrarse");
-
-if (btnRegistrarse) { // Se usa este if porque no existe en log-in.html
-    btnRegistrarse.addEventListener("click", function () {
-        const correo = document.querySelector('input[type="email"]').value;
-        const nombre = document.querySelector('input[type="text"]').value;
+if (btnRegistrarse) {
+    btnRegistrarse.addEventListener("click", async function () {
+        const correo = document.querySelector('input[type="email"]').value.trim();
+        const nombre = document.querySelector('input[type="text"]').value.trim();
         const contraseña = document.getElementById("inputContraseña").value;
 
         if (correo === "" || nombre === "" || contraseña === "") {
@@ -74,16 +72,16 @@ if (btnRegistrarse) { // Se usa este if porque no existe en log-in.html
             return;
         }
 
-        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+        const { data, error } = await clienteSupabase.auth.signUp({
+            email: correo,
+            password: contraseña,
+            options: { data: { nombre: nombre } }
+        });
 
-        const yaExiste = usuarios.some(u => u.correo === correo); // evita duplicados
-        if (yaExiste) {
-            alert("Ese correo ya esta registrado");
+        if (error) {
+            alert("No se pudo registrar: " + error.message);
             return;
         }
-
-        usuarios.push({correo: correo, nombre: nombre, contraseña: contraseña});
-        localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
         alert("Registro exitoso");
         window.location.href = "log-in.html";
