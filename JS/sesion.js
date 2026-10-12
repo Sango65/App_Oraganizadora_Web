@@ -1,14 +1,19 @@
-const nombreHeader = document.getElementById("nombreUsuarioHeader");
+// Muestra el nombre del usuario con sesión activa; si no hay sesión, regresa al login
+async function cargarUsuarioHeader() {
+    const nombreHeader = document.getElementById("nombreUsuarioHeader");
+    if (!nombreHeader) return;
 
-if (nombreHeader) {
-    const correoActivo = localStorage.getItem("sesionActiva");
-    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const usuario = usuarios.find(u => u.correo === correoActivo);
+    const { data: { session } } = await clienteSupabase.auth.getSession();
 
-    if (usuario) {
-        nombreHeader.textContent = usuario.nombre;
+    if (!session) {
+        window.location.href = "log-in.html";
+        return;
     }
+
+    nombreHeader.textContent = session.user.user_metadata.nombre || "Usario";
 }
+
+cargarUsuarioHeader();
 
 // Abre el modal de confirmación al tocar el nombre de usuario
 const btnCerrarSesion = document.getElementById("btnCerrarSesion");
@@ -25,8 +30,8 @@ if (btnCerrarSesion) {
         modalCerrarSesion.classList.remove("flex");
     });
 
-    document.getElementById("btnConfirmarCerrarSesion").addEventListener("click", function () {
-        localStorage.removeItem("sesionActiva");
+    document.getElementById("btnConfirmarCerrarSesion").addEventListener("click", async function () {
+        await clienteSupabase.auth.signOut();
         window.location.href = "log-in.html";
     });
 }

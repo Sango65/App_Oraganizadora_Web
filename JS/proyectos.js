@@ -1,8 +1,18 @@
-function actualizarVistaProyectos() {
+async function actualizarVistaProyectos() {
     const estadoVacio = document.getElementById("estadoVacio");
     if (!estadoVacio) return;
 
-    let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
+    // RLS ya filtra: solo llegan los proyectos del usuario con sesión activa
+    const { data: proyectos, error } = await clienteSupabase
+        .from("proyectos")
+        .select("*")
+        .order("creado_en", { ascending: false });
+
+    if (error) {
+        alert("No se pudieron cargar los proyectos: " + error.message);
+        return;
+    }
+
     const listaProyectos = document.getElementById("listaProyectos");
 
     const terminados = proyectos.filter(p => p.terminado === true).length;
@@ -19,10 +29,6 @@ function actualizarVistaProyectos() {
     estadoVacio.classList.add("hidden");
     listaProyectos.classList.remove("hidden");
 
-    // Ordena del más nuevo al más viejo, para que los grupos salgan en orden lógico
-    proyectos.sort((a, b) => (b.fechaCreacionTimestamp || 0) - (a.fechaCreacionTimestamp || 0));
-
-    // Agrupa los proyectos por su etiqueta de tiempo
     const grupos = {};
     proyectos.forEach(function (proyecto) {
         const grupo = obtenerGrupoTiempo(proyecto);
@@ -30,13 +36,12 @@ function actualizarVistaProyectos() {
         grupos[grupo].push(proyecto);
     });
 
-    // Define el orden correcto en que deben aparecer los grupos
     const ordenGrupos = ["RECIENTES", "HACE 1 DÍA", "HACE 2 DÍAS", "HACE 3 DÍAS", "HACE 4 DÍAS", "HACE 5 DÍAS", "HACE 6 DÍAS", "HACE 1 SEMANA"];
 
     function posicionDeGrupo(nombreGrupo) {
         const posicionFija = ordenGrupos.indexOf(nombreGrupo);
         if (posicionFija !== -1) return posicionFija;
-        return ordenGrupos.length + 1; // semanas/meses/años van después, en el orden en que aparezcan
+        return ordenGrupos.length + 1;
     }
 
     let html = "";
@@ -53,13 +58,13 @@ function actualizarVistaProyectos() {
                             <h3 class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</h3>
                             <p class="text-gray-400 text-xs">${escaparHTML(proyecto.materia)}</p>
                         </div>
-                        <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto(${proyecto.id})"></i>
+                        <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto('${proyecto.id}')"></i>
                     </div>
                     <div id="menu-${proyecto.id}" class="hidden absolute right-4 top-10 bg-gray-700 rounded-xl shadow-lg overflow-hidden z-10">
-                        <button onclick="editarProyecto(${proyecto.id})" class="block w-full text-left px-4 py-2 text-white text-sm hover:bg-gray-600">Editar</button>
-                        <button onclick="eliminarProyecto(${proyecto.id})" class="block w-full text-left px-4 py-2 text-red-400 text-sm hover:bg-gray-600">Eliminar</button>
+                        <button onclick="editarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-white text-sm hover:bg-gray-600">Editar</button>
+                        <button onclick="eliminarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-red-400 text-sm hover:bg-gray-600">Eliminar</button>
                     </div>
-                    <p class="text-gray-500 text-xs mt-2">Creado: ${proyecto.fechaCreacion}</p>
+                    <p class="text-gray-500 text-xs mt-2">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
                 </div>
             `;
         }).join("");
@@ -68,7 +73,12 @@ function actualizarVistaProyectos() {
     listaProyectos.innerHTML = html;
 }
 
-actualizarVistaProyectos();
+// Dibuja la lista al cargar la página
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", actualizarVistaProyectos);
+} else {
+    actualizarVistaProyectos();
+}
 
 // Abre/cierra el menu de tres puntos de un proyecto especifico
 function toggleMenuProyecto(id) {
@@ -91,13 +101,21 @@ document.addEventListener("click", function (evento) {
 // Guarda temporalmente que proyecto se esta renombrando
 let idProyectoAEditar = null;
 
-function editarProyecto(id) {
-    let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
-    const proyecto = proyectos.find(p => p.id === id);
+async function editarProyecto(id) {
+    const { data: proyecto, error } = await clienteSupabase
+        .from("proyectos")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+    if (error) {
+        alert("No se pudo cargar el proyecto: " + error.message);
+        return;
+    }
 
     idProyectoAEditar = id;
     document.getElementById("inputEditarNombre").value = proyecto.nombre;
-    document.getElementById("inputEditarDesarrolladoPor").value = proyecto.desarrolladoPor;
+    document.getElementById("inputEditarDesarrolladoPor").value = proyecto.desarrollado_por;
     document.getElementById("inputEditarMateria").value = proyecto.materia;
 
     const modal = document.getElementById("modalEditar");
@@ -118,39 +136,44 @@ if (btnCerrarModalEditar) {
     btnCerrarModalEditar.addEventListener("click", cerrarModalEditar);
     document.getElementById("btnCancelarEditar").addEventListener("click", cerrarModalEditar);
 
-    document.getElementById("btnConfirmarEditar").addEventListener("click", function () {
-        const nombre = document.getElementById("inputEditarNombre").value;
-        const desarrolladoPor = document.getElementById("inputEditarDesarrolladoPor").value;
-        const materia = document.getElementById("inputEditarMateria").value;
+        document.getElementById("btnConfirmarEditar").addEventListener("click", async function () {
+        const nombre = document.getElementById("inputEditarNombre").value.trim();
+        const desarrolladoPor = document.getElementById("inputEditarDesarrolladoPor").value.trim();
+        const materia = document.getElementById("inputEditarMateria").value.trim();
 
-        if (nombre.trim() === "" || desarrolladoPor.trim() === "" || materia.trim() === "") {
+        if (nombre === "" || desarrolladoPor === "" || materia === "") {
             alert("Por favor, llena todos los campos");
             return;
         }
 
-        let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
-        const proyecto = proyectos.find(p => p.id === idProyectoAEditar);
+        const { error } = await clienteSupabase
+            .from("proyectos")
+            .update({ nombre: nombre, desarrollado_por: desarrolladoPor, materia: materia })
+            .eq("id", idProyectoAEditar);
 
-        proyecto.nombre = nombre;
-        proyecto.desarrolladoPor = desarrolladoPor;
-        proyecto.materia = materia;
+        if (error) {
+            alert("No se pudo guardar: " + error.message);
+            return;
+        }
 
-        localStorage.setItem("proyectos", JSON.stringify(proyectos));
         cerrarModalEditar();
         actualizarVistaProyectos();
     });
 }
 
 // Elimina un proyecto con confirmacion previa
-function eliminarProyecto(id) {
+async function eliminarProyecto(id) {
     const confirmar = confirm("Este proyecto se eliminará permanentemente. ¿Continuar?");
+    if (!confirmar) return;
 
-    if (confirmar) {
-        let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
-        proyectos = proyectos.filter(p => p.id !== id);
-        localStorage.setItem("proyectos", JSON.stringify(proyectos));
-        actualizarVistaProyectos();
+    const { error } = await clienteSupabase.from("proyectos").delete().eq("id", id);
+
+    if (error) {
+        alert("No se pudo eliminar: " + error.message);
+        return;
     }
+
+    actualizarVistaProyectos();
 }
 
 // Modal Nuevo Proyecto (abrir/cerrar) ---
@@ -264,49 +287,45 @@ if (btnNuevoProyecto) {
 const btnCrearProyecto = document.getElementById("btnCrearProyecto");
 
 if (btnCrearProyecto) {
-    btnCrearProyecto.addEventListener("click", function () {
-        const nombre = document.getElementById("inputNombreProyecto").value;
-        const desarrolladoPor = document.getElementById("inputDesarrolladoPor").value;
-        const materia = document.getElementById("inputMateria").value;
+    btnCrearProyecto.addEventListener("click", async function () {
+        // .trim() en los tres campos de texto
+        const nombre = document.getElementById("inputNombreProyecto").value.trim();
+        const desarrolladoPor = document.getElementById("inputDesarrolladoPor").value.trim();
+        const materia = document.getElementById("inputMateria").value.trim();
+        const fechaLimite = document.getElementById("inputFechaLimite").value;
 
-        if (nombre === "" || desarrolladoPor === "" || materia === "") {
+        if (nombre === "" || desarrolladoPor === "" || materia === "" || fechaLimite === "") {
             alert("Por favor, llena todos los campos");
             return;
         }
 
-        let proyectos = JSON.parse(localStorage.getItem("proyectos")) || [];
+        const hoy = new Date().toLocaleDateString("en-CA");
+        if (fechaLimite < hoy) {
+            alert("La fecha límite no puede ser anterior a hoy");
+            return;
+        }
 
-        const nuevoProyecto = {
-            id: Date.now(),
+        const { error } = await clienteSupabase.from("proyectos").insert({
             nombre: nombre,
-            desarrolladoPor: desarrolladoPor,
+            desarrollado_por: desarrolladoPor,
             materia: materia,
-            fechaCreacion: new Date().toLocaleDateString(),
-            fechaCreacionTimestamp: Date.now()
-        };
-
-        proyectos.push(nuevoProyecto);
-        localStorage.setItem("proyectos", JSON.stringify(proyectos));
-
-        // Siembra ñas 3 fases por defecto para este nuevo proyecto
-        let fases = JSON.parse(localStorage.getItem("fases")) || [];
-
-        const fasesPorDefecto = ["Inicio", "Desarrollo", "Cierre"];
-        fasesPorDefecto.forEach(function (nombreFase, indice) {
-            fases.push({
-                id: Date.now() + indice,
-                nombre: nombreFase,
-                orden: indice,
-                proyectoId: nuevoProyecto.id
-            });
+            fecha_limite: fechaLimite
         });
 
-        localStorage.setItem("fases", JSON.stringify(fases));
+        // Mensaje si el nombre se repite
+        if (error) {
+            if (error.code === "23505") {
+                alert("Ya tienes un proyecto con ese nombre. Elige otro.");
+            } else {
+                alert("No se pudo crear el proyecto: " + error.message);
+            }
+            return;
+        }
 
-        // Limpiar los campos para la próxima vez que abran el modal
         document.getElementById("inputNombreProyecto").value = "";
         document.getElementById("inputDesarrolladoPor").value = "";
         document.getElementById("inputMateria").value = "";
+        document.getElementById("inputFechaLimite").value = "";
 
         cerrarModal();
         actualizarVistaProyectos();
@@ -314,8 +333,13 @@ if (btnCrearProyecto) {
 }
 
 function obtenerGrupoTiempo(proyecto) {
-    const timestamp = proyecto.fechaCreacionTimestamp || convertirFechaAntigua(proyecto.fechaCreacion);
-    const diffDias = Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
+    const fecha = new Date(proyecto.creado_en);
+    const hoy = new Date();
+
+    // Se compara a nivel de día del calendario, ignorando la hora
+    const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    const inicioFecha = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+    const diffDias = Math.max(0, Math.round((inicioHoy - inicioFecha) / (1000 * 60 * 60 * 24)));
 
     if (diffDias === 0) return "RECIENTES";
     if (diffDias < 7) return "HACE " + diffDias + " DÍA" + (diffDias === 1 ? "" : "S");
@@ -328,10 +352,4 @@ function obtenerGrupoTiempo(proyecto) {
 
     const diffAnios = Math.floor(diffDias / 365);
     return diffAnios === 1 ? "HACE 1 AÑO" : "HACE " + diffAnios + " AÑOS";
-}
-
-// Para proyectos creados antes de que existiera fechaCreacionTimestamp
-function convertirFechaAntigua(fechaTexto) {
-    const partes = fechaTexto.split("/");
-    return new Date(partes[2], partes[1] - 1, partes[0]).getTime();
 }

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUIO</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../JS/supabase.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
@@ -85,6 +87,9 @@
                 <label class="text-gray-400 text-xs uppercase tracking-wide">Materia</label>
                 <input type="text" id="inputMateria" placeholder="Ej. Nombre de la materia" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
+                <label class="text-gray-400 text-xs uppercase tracking-wide">Fecha límite de entrega</label>
+                <input type="date" id="inputFechaLimite" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none [color-scheme:dark]">
+                
                 <div class="flex gap-2">
                     <button id="btnCancelarProyecto" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
                     <button id="btnCrearProyecto" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Crear</button>

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guía de tareas</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../JS/supabase.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </head>
@@ -16,7 +18,7 @@
             <span id="nombreUsuarioHeader" class="text-gray-400 text-base">Usuario</span>
         </div>
         <h1 class="text-white text-2xl font-semibold">Guía de tareas</h1>
-        <p class="text-gray-400 text-xs uppercase tracking-wider mt-1">Gestion de entregables</p>
+        <p class="text-gray-400 text-xs uppercase tracking-wider mt-1">Gestion de fases</p>
     </div>
 
     <!-- contenido (proyectos con sus fases) -->
@@ -52,6 +54,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal: Nueva fase (oculto por defecto) -->
+    <div id="modalFase" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="w-full max-w-sm mx-4 bg-gray-800 rounded-2xl p-5">
+            <h2 class="text-white font-semibold mb-3">Nueva fase</h2>
+            <input id="inputNombreFase" type="text" placeholder="Ej. Investigación" class="w-full bg-gray-900 text-white rounded-xl px-3 py-2 mb-4 outline-none">
+            <div class="flex gap-2">
+                <button id="btnCancelarFase" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
+                <button id="btnGuardarFase" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Crear</button>
+            </div>
+        </div>
+    </div>
+    
     <div id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" role="status" aria-live="polite" aria-label="Cargando pantalla">
         <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-red-500"></div>
     </div>

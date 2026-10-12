@@ -56,6 +56,8 @@ function marcarRequisito(id, cumplido) {
 }
 
 // Registro (sign-up.html)
+const btnRegistrarse = document.getElementById("btnRegistrarse")
+
 if (btnRegistrarse) {
     btnRegistrarse.addEventListener("click", async function () {
         const correo = document.querySelector('input[type="email"]').value.trim();
@@ -92,7 +94,7 @@ if (btnRegistrarse) {
 const btnIniciarSesion = document.getElementById("btnIniciarSesion");
 
 if (btnIniciarSesion) { // Se usa este if porque no existe en sign-up.html
-    btnIniciarSesion.addEventListener("click", function () {
+    btnIniciarSesion.addEventListener("click", async function () {
         const correo = document.querySelector('input[type="email"]').value;
         const contraseña = document.getElementById("inputContraseñaLogin").value;
 
@@ -101,15 +103,16 @@ if (btnIniciarSesion) { // Se usa este if porque no existe en sign-up.html
             return;
         }
 
-        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-        const usuarioEncontrado = usuarios.find(u => u.correo === correo && u.contraseña === contraseña);
+        const { data, error } = await clienteSupabase.auth.signInWithPassword({
+            email: correo,
+            password: contraseña
+        })
 
-        if (!usuarioEncontrado) {
+        if (error) {
             alert("Correo o contraseña incorrectos");
             return;
         }
 
-        localStorage.setItem("sesionActiva", correo); // usuario logueado
         window.location.href = "mis-proyectos.html"
     });
 }

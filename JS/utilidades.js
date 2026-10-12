@@ -1,4 +1,4 @@
-// Convierte texto en HTML seguro, evitando que se ejecute código malicioso
+// Convierte texto en HTML seguro evitando que se ejecute código malicioso
 function escaparHTML(texto) {
     const div = document.createElement("div");
     div.textContent = texto;
