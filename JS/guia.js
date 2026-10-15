@@ -55,7 +55,7 @@ async function actualizarVistaGuia() {
             `
             : `
                 ${htmlFases}
-                <button onclick="abrirModalFase('${proyecto.id}')" class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl text-sm mt-1">+ Agregar fase</button>
+                <button onclick="abrirModalFase('${proyecto.id}')" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl text-sm mt-1">+ Agregar fase</button>
             `;
 
         return `
