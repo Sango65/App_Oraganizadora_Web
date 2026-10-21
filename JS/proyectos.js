@@ -64,7 +64,8 @@ async function actualizarVistaProyectos() {
                         <button onclick="editarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-white text-sm hover:bg-gray-600">Editar</button>
                         <button onclick="eliminarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-red-400 text-sm hover:bg-gray-600">Eliminar</button>
                     </div>
-                    <p class="text-gray-500 text-xs mt-2">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
+                    <p class="text-gray-500 text-xs mt-1">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
+                    <p class="text-amber-400 text-xs mt-2"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</p>
                 </div>
             `;
         }).join("");
@@ -100,6 +101,7 @@ document.addEventListener("click", function (evento) {
 
 // Guarda temporalmente que proyecto se esta renombrando
 let idProyectoAEditar = null;
+let fechaLimiteOriginal = "";
 
 async function editarProyecto(id) {
     const { data: proyecto, error } = await clienteSupabase
@@ -117,6 +119,8 @@ async function editarProyecto(id) {
     document.getElementById("inputEditarNombre").value = proyecto.nombre;
     document.getElementById("inputEditarDesarrolladoPor").value = proyecto.desarrollado_por;
     document.getElementById("inputEditarMateria").value = proyecto.materia;
+    fechaLimiteOriginal = proyecto.fecha_limite || "";
+    document.getElementById("inputEditarFechaLimite").value = fechaLimiteOriginal;
 
     const modal = document.getElementById("modalEditar");
     modal.classList.remove("hidden");
@@ -140,19 +144,36 @@ if (btnCerrarModalEditar) {
         const nombre = document.getElementById("inputEditarNombre").value.trim();
         const desarrolladoPor = document.getElementById("inputEditarDesarrolladoPor").value.trim();
         const materia = document.getElementById("inputEditarMateria").value.trim();
+        const fechaLimite = document.getElementById("inputEditarFechaLimite").value;
 
-        if (nombre === "" || desarrolladoPor === "" || materia === "") {
+        if (nombre === "" || desarrolladoPor === "" || materia === "" || fechaLimite === "") {
             alert("Por favor, llena todos los campos");
+            return;
+        }
+
+        // Solo se valida contra hoy si el usuario cambió la fecha
+        const hoy = new Date().toLocaleDateString("en-CA");
+        if (fechaLimite !== fechaLimiteOriginal && fechaLimite < hoy) {
+            alert("La fecha límite no puede ser anterior a hoy");
             return;
         }
 
         const { error } = await clienteSupabase
             .from("proyectos")
-            .update({ nombre: nombre, desarrollado_por: desarrolladoPor, materia: materia })
+            .update({
+                nombre: nombre,
+                desarrollado_por: desarrolladoPor,
+                materia: materia,
+                fecha_limite: fechaLimite
+            })
             .eq("id", idProyectoAEditar);
 
         if (error) {
-            alert("No se pudo guardar: " + error.message);
+            if (error.code === "23505") {
+                alert("Ya tienes un proyecto con ese nombre. Elige otro.");
+            } else {
+                alert("No se pudo guardar: " + error.message);
+            }
             return;
         }
 
@@ -352,4 +373,11 @@ function obtenerGrupoTiempo(proyecto) {
 
     const diffAnios = Math.floor(diffDias / 365);
     return diffAnios === 1 ? "HACE 1 AÑO" : "HACE " + diffAnios + " AÑOS";
+}
+
+// Convierte formato de fecha a n/n/nnn
+function formatearFechaLimite(fecha) {
+    if (!fecha) return "Sin fecha";
+    const partes = fecha.split("-");
+    return partes[2] + "/" + partes[1] + "/" + partes[0];
 }
