@@ -381,3 +381,4 @@ function formatearFechaLimite(fecha) {
     const partes = fecha.split("-");
     return partes[2] + "/" + partes[1] + "/" + partes[0];
 }
+//https://vscode.dev/github/Sango65/App_Oraganizadora_Web/blob/dev/JS/proyectos.js
