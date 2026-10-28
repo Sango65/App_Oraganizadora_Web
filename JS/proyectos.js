@@ -56,7 +56,7 @@ async function actualizarVistaProyectos() {
                     <div class="flex items-start justify-between">
                         <div>
                             <h3 class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</h3>
-                            <p class="text-gray-400 text-xs">${escaparHTML(proyecto.materia)}</p>
+                            <p class="text-gray-400 text-xs">${escaparHTML(proyecto.materia_asignatura)}</p>
                         </div>
                         <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto('${proyecto.id}')"></i>
                     </div>
@@ -118,7 +118,7 @@ async function editarProyecto(id) {
     idProyectoAEditar = id;
     document.getElementById("inputEditarNombre").value = proyecto.nombre;
     document.getElementById("inputEditarDesarrolladoPor").value = proyecto.desarrollado_por;
-    document.getElementById("inputEditarMateria").value = proyecto.materia;
+    document.getElementById("inputEditarMateria").value = proyecto.materia_asignatura;
     fechaLimiteOriginal = proyecto.fecha_limite || "";
     document.getElementById("inputEditarFechaLimite").value = fechaLimiteOriginal;
 
@@ -163,7 +163,7 @@ if (btnCerrarModalEditar) {
             .update({
                 nombre: nombre,
                 desarrollado_por: desarrolladoPor,
-                materia: materia,
+                materia_asignatura: materia,
                 fecha_limite: fechaLimite
             })
             .eq("id", idProyectoAEditar);
@@ -329,7 +329,7 @@ if (btnCrearProyecto) {
         const { error } = await clienteSupabase.from("proyectos").insert({
             nombre: nombre,
             desarrollado_por: desarrolladoPor,
-            materia: materia,
+            materia_asignatura: materia,
             fecha_limite: fechaLimite
         });
 
