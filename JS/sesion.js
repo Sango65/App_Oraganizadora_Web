@@ -13,7 +13,15 @@ async function cargarUsuarioHeader() {
     nombreHeader.textContent = session.user.user_metadata.nombre || "Usario";
 }
 
-cargarUsuarioHeader();
+async function iniciarCargaSesion() {
+    try {
+        await cargarUsuarioHeader();
+    } catch (error) {
+        console.error("No se pudo cargar la sesión:", error);
+    }
+}
+
+queueMicrotask(iniciarCargaSesion);
 
 // Abre el modal de confirmación al tocar el nombre de usuario
 const btnCerrarSesion = document.getElementById("btnCerrarSesion");

@@ -29,11 +29,11 @@ const ACCIONES_FASE = [
 // ---------- Utilidades ----------
 function escaparCampo(texto) {
     return String(texto)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
 }
 
 function plural(n, singular, pluralTexto) {
@@ -153,6 +153,7 @@ function dibujarVista() {
             return htmlFaseNormal(fase, tareas, etiqueta, enModo);
         }).join("");
 
+        const claseBotonAgregarFase = enModo ? "opacity-40 pointer-events-none" : "";
         const contenidoFases = fases.length === 0
             ? `
                 <p class="text-gray-500 text-sm mb-3">Aún no tiene fases, crea una</p>
@@ -160,7 +161,7 @@ function dibujarVista() {
             `
             : `
                 ${htmlFases}
-                <button onclick="abrirModalFase('${proyecto.id}')" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl text-sm mt-1 ${enModo ? "opacity-40 pointer-events-none" : ""}">+ Agregar fase</button>
+                <button onclick="abrirModalFase('${proyecto.id}')" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl text-sm mt-1 ${claseBotonAgregarFase}">+ Agregar fase</button>
             `;
 
         return `
@@ -265,10 +266,12 @@ function htmlFaseEliminar(fase, tareas, etiqueta) {
     const filas = tareas.map(function (tarea) {
         const marcadaDirecta = marcadas.has(tarea.id);
         const marcada = faseMarcada || marcadaDirecta;
+        const etiquetaBoton = marcadaDirecta ? "Deshacer" : "Marcar para eliminar";
+        const iconoBoton = marcadaDirecta ? "ti-arrow-back-up text-red-300" : "ti-trash text-red-400";
 
         const boton = faseMarcada ? "" : `
-            <button onclick="toggleMarca('${tarea.id}')" class="w-10 h-10 flex items-center justify-center shrink-0" aria-label="${marcadaDirecta ? "Deshacer" : "Marcar para eliminar"}">
-                <i class="ti ${marcadaDirecta ? "ti-arrow-back-up text-red-300" : "ti-trash text-red-400"} text-lg"></i>
+            <button onclick="toggleMarca('${tarea.id}')" class="w-10 h-10 flex items-center justify-center shrink-0" aria-label="${etiquetaBoton}">
+                <i class="ti ${iconoBoton} text-lg"></i>
             </button>
         `;
 
@@ -379,7 +382,13 @@ function actualizarBarra() {
 
     if (modo.accion === "renombrar") {
         const n = idsConCambio().length;
-        btnAplicar.textContent = guardando ? "Guardando…" : (n > 0 ? "Guardar cambios (" + n + ")" : "Listo");
+        if (guardando) {
+            btnAplicar.textContent = "Guardando…";
+        } else if (n > 0) {
+            btnAplicar.textContent = "Guardar cambios (" + n + ")";
+        } else {
+            btnAplicar.textContent = "Listo";
+        }
     } else {
         btnAplicar.textContent = textoBotonEliminar();
     }
@@ -391,7 +400,7 @@ function actualizarBarra() {
     if (contador) contador.textContent = textoContador();
 }
 
-// ---------- Menú ⋮ de la fase ----------
+// Menu de la fase
 function abrirMenuFase(faseId, boton) {
     if (modo) return;
 
@@ -430,7 +439,7 @@ function cerrarMenuFase() {
     if (menu) menu.classList.add("hidden");
 }
 
-// ---------- Entrar y salir de un modo ----------
+// Entrar y salir de un modo
 function iniciarModo(faseId, accion) {
     cerrarMenuFase();
 
@@ -448,7 +457,7 @@ function iniciarModo(faseId, accion) {
                 if (ok) {
                     cerrarConfirmacion();
                     dibujarVista();
-                    actualizarVistaGuia();
+                    void actualizarVistaGuia();
                 }
             }
         );
@@ -516,7 +525,7 @@ function aplicarModo() {
             salirDelModo();
             return;
         }
-        guardarRenombrados();
+        void guardarRenombrados();
         return;
     }
 
@@ -534,7 +543,7 @@ function aplicarModo() {
         if (ok) {
             cerrarConfirmacion();
             salirDelModo();
-            actualizarVistaGuia();
+            void actualizarVistaGuia();
         }
     });
 }
@@ -570,7 +579,8 @@ async function guardarRenombrados() {
             // Si no se actualizó ninguna fila, el elemento ya no existe (borrado en otro dispositivo)
             if (!data || data.length === 0) return { id: id, ok: false, motivo: "ya no existe" };
             return { id: id, ok: true };
-        } catch (e) {
+        } catch {
+            // Un fallo individual no impide intentar guardar los demás cambios.
             return { id: id, ok: false, motivo: "sin conexión" };
         }
     }));
@@ -583,7 +593,7 @@ async function guardarRenombrados() {
 
     if (fallos.length === 0) {
         salirDelModo();
-        actualizarVistaGuia();
+        void actualizarVistaGuia();
         return;
     }
 
@@ -600,9 +610,9 @@ async function guardarRenombrados() {
     );
 }
 
-// ---------- Eliminar en lote ----------
+// Eliminar en lote
 function toggleMarca(id) {
-    if (!modo || modo.accion !== "eliminar") return;
+    if (modo?.accion !== "eliminar") return;
 
     if (marcadas.has(id)) {
         marcadas.delete(id);
@@ -629,7 +639,12 @@ function mensajeEliminacion(faseId) {
     let mensaje;
 
     if (marcadas.has(faseId)) {
-        const resto = ids.length === 0 ? "" : (ids.length === 1 ? " y su tarea" : " y sus " + ids.length + " tareas");
+        let resto = "";
+        if (ids.length === 1) {
+            resto = " y su tarea";
+        } else if (ids.length > 1) {
+            resto = " y sus " + ids.length + " tareas";
+        }
         mensaje = 'Se eliminarán la fase "' + textos[faseId] + '"' + resto + ". No se puede deshacer.";
     } else if (ids.length === 1) {
         mensaje = 'Se eliminará la tarea "' + textos[ids[0]] + '". No se puede deshacer.';
@@ -759,7 +774,7 @@ async function toggleTareaCompletada(id, completada) {
     if (error) {
         alert("No se pudo actualizar la tarea.");
     }
-    actualizarVistaGuia();
+    void actualizarVistaGuia();
 }
 
 // ---------- Modal de nueva fase ----------
@@ -814,7 +829,7 @@ document.getElementById("btnGuardarFase").addEventListener("click", async functi
 
     abiertos.add(proyectoIdNuevaFase);
     cerrarModalFase();
-    actualizarVistaGuia();
+    void actualizarVistaGuia();
 });
 
 // ---------- Modal de nueva tarea ----------
@@ -874,13 +889,13 @@ async function guardarTarea() {
 
     abiertos.add(faseIdNuevaTarea);
     cerrarModalTarea();
-    actualizarVistaGuia();
+    void actualizarVistaGuia();
 }
 
 document.getElementById("btnCancelarTarea").addEventListener("click", cerrarModalTarea);
 document.getElementById("btnGuardarTarea").addEventListener("click", guardarTarea);
 document.getElementById("inputNombreTarea").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") guardarTarea();
+    if (e.key === "Enter") void guardarTarea();
 });
 
 // ---------- Elementos creados por JavaScript (no requieren HTML) ----------
@@ -909,7 +924,7 @@ const contenedorGuiaEl = document.getElementById("contenedorGuia");
 // Escribir en un campo: actualiza el borrador sin redibujar (no pierde el foco)
 contenedorGuiaEl.addEventListener("input", function (e) {
     const campo = e.target.closest("textarea[data-id]");
-    if (!campo || !modo || modo.accion !== "renombrar") return;
+    if (!campo || modo?.accion !== "renombrar") return;
 
     const id = campo.dataset.id;
     borradores[id] = campo.value;
@@ -964,10 +979,17 @@ document.addEventListener("click", function (e) {
 
 // Aviso del navegador si se intenta salir con cambios sin guardar
 window.addEventListener("beforeunload", function (e) {
-    if (modo && modo.accion === "renombrar" && idsConCambio().length > 0) {
+    if (modo?.accion === "renombrar" && idsConCambio().length > 0) {
         e.preventDefault();
-        e.returnValue = "";
     }
 });
 
-actualizarVistaGuia();
+async function iniciarVistaGuia() {
+    try {
+        await actualizarVistaGuia();
+    } catch (error) {
+        console.error("No se pudo iniciar la guía:", error);
+    }
+}
+
+queueMicrotask(iniciarVistaGuia);

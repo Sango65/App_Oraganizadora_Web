@@ -17,7 +17,7 @@ function toggleContraseña(idInput, idIcono) {
 // Mínimo 8 caracteres, con letras y números
 function validarContraseña(contraseña) {
     const tieneLetras = /[a-zA-Z]/.test(contraseña);
-    const tieneNumeros = /[0-9]/.test(contraseña);
+    const tieneNumeros = /\d/.test(contraseña);
     return contraseña.length >= 8 && tieneLetras && tieneNumeros;
 }
 
@@ -29,7 +29,7 @@ if (inputPassRegistro) {
         const valor = inputPassRegistro.value;
         const cumpleLongitud = valor.length >= 8;
         const cumpleLetras = /[a-zA-Z]/.test(valor);
-        const cumpleNumeros = /[0-9]/.test(valor);
+        const cumpleNumeros = /\d/.test(valor);
 
         marcarRequisito("reqLongitud", cumpleLongitud);
         marcarRequisito("reqLetras", cumpleLetras);
@@ -74,7 +74,7 @@ if (btnRegistrarse) {
             return;
         }
 
-        const { data, error } = await clienteSupabase.auth.signUp({
+        const { error } = await clienteSupabase.auth.signUp({
             email: correo,
             password: contraseña,
             options: { data: { nombre: nombre } }
@@ -103,7 +103,7 @@ if (btnIniciarSesion) { // Se usa este if porque no existe en sign-up.html
             return;
         }
 
-        const { data, error } = await clienteSupabase.auth.signInWithPassword({
+        const { error } = await clienteSupabase.auth.signInWithPassword({
             email: correo,
             password: contraseña
         })

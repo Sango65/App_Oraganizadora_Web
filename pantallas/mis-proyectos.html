@@ -1,10 +1,10 @@
  <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUIO</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script>
     <script src="../JS/supabase.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -79,16 +79,16 @@
                     <i class="ti ti-x text-gray-400 cursor-pointer" id="btnCerrarModal"></i>
                 </div>
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Nombre del proyecto</label>
+                <label for="inputNombreProyecto" class="text-gray-400 text-xs uppercase tracking-wide">Nombre del proyecto</label>
                 <input type="text" id="inputNombreProyecto" placeholder="Ej. Proyecto final" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Estudiante/s</label>
+                <label for="inputDesarrolladoPor" class="text-gray-400 text-xs uppercase tracking-wide">Estudiante/s</label>
                 <input type="text" id="inputDesarrolladoPor" placeholder="Ej. Nombre del equipo" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Materia/Asignatura</label>
+                <label for="inputMateria" class="text-gray-400 text-xs uppercase tracking-wide">Materia/Asignatura</label>
                 <input type="text" id="inputMateria" placeholder="Ej. Nombre de la materia/asignatura" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Fecha límite de entrega</label>
+                <label for="inputFechaLimite" class="text-gray-400 text-xs uppercase tracking-wide">Fecha límite de entrega</label>
                 <input type="date" id="inputFechaLimite" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none [color-scheme:dark]">
                 
                 <div class="flex gap-2">
@@ -106,16 +106,16 @@
                     <i class="ti ti-x text-gray-400 cursor-pointer" id="btnCerrarModalEditar"></i>
                 </div>
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Cambiar nombre del proyecto</label>
+                <label for="inputEditarNombre" class="text-gray-400 text-xs uppercase tracking-wide">Cambiar nombre del proyecto</label>
                 <input type="text" id="inputEditarNombre" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Cambiar estudiante/s</label>
+                <label for="inputEditarDesarrolladoPor" class="text-gray-400 text-xs uppercase tracking-wide">Cambiar estudiante/s</label>
                 <input type="text" id="inputEditarDesarrolladoPor" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Cambiar materia/asignatura</label>
+                <label for="inputEditarMateria" class="text-gray-400 text-xs uppercase tracking-wide">Cambiar materia/asignatura</label>
                 <input type="text" id="inputEditarMateria" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none">
 
-                <label class="text-gray-400 text-xs uppercase tracking-wide">Cambiar fecha límite de entrega</label>
+                <label for="inputEditarFechaLimite" class="text-gray-400 text-xs uppercase tracking-wide">Cambiar fecha límite de entrega</label>
                 <input type="date" id="inputEditarFechaLimite" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-4 outline-none">
 
                 <div class="flex gap-2">
@@ -137,9 +137,9 @@
                 </div>
             </div>
         </div>
-    <div id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" role="status" aria-live="polite" aria-label="Cargando pantalla">
+    <output id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" aria-live="polite" aria-label="Cargando pantalla">
         <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-red-500"></div>
-    </div>
+    </output>
     <script src="../JS/utilidades.js"></script>
     <script src="../JS/sesion.js"></script>
     <script src="../JS/proyectos.js"></script>

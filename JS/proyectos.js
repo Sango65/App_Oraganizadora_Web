@@ -2,6 +2,22 @@ async function actualizarVistaProyectos() {
     const estadoVacio = document.getElementById("estadoVacio");
     if (!estadoVacio) return;
 
+    const proyectos = await cargarProyectos();
+    if (proyectos === undefined) return;
+
+    actualizarContadoresProyectos(proyectos);
+
+    const listaProyectos = document.getElementById("listaProyectos");
+    if (proyectos.length === 0) {
+        mostrarEstadoVacioProyectos(estadoVacio, listaProyectos);
+        return;
+    }
+
+    mostrarListaProyectos(estadoVacio, listaProyectos);
+    listaProyectos.innerHTML = generarHTMLProyectos(proyectos);
+}
+
+async function cargarProyectos() {
     // RLS ya filtra: solo llegan los proyectos del usuario con sesión activa
     const { data: proyectos, error } = await clienteSupabase
         .from("proyectos")
@@ -10,25 +26,30 @@ async function actualizarVistaProyectos() {
 
     if (error) {
         alert("No se pudieron cargar los proyectos: " + error.message);
-        return;
+        return undefined;
     }
 
-    const listaProyectos = document.getElementById("listaProyectos");
+    return proyectos;
+}
 
+function actualizarContadoresProyectos(proyectos) {
     const terminados = proyectos.filter(p => p.terminado === true).length;
     const enCurso = proyectos.length - terminados;
     document.getElementById("contadorTerminados").textContent = terminados;
     document.getElementById("contadorEnCurso").textContent = enCurso;
+}
 
-    if (proyectos.length === 0) {
-        estadoVacio.classList.remove("hidden");
-        listaProyectos.classList.add("hidden");
-        return;
-    }
+function mostrarEstadoVacioProyectos(estadoVacio, listaProyectos) {
+    estadoVacio.classList.remove("hidden");
+    listaProyectos.classList.add("hidden");
+}
 
+function mostrarListaProyectos(estadoVacio, listaProyectos) {
     estadoVacio.classList.add("hidden");
     listaProyectos.classList.remove("hidden");
+}
 
+function agruparProyectosPorTiempo(proyectos) {
     const grupos = {};
     proyectos.forEach(function (proyecto) {
         const grupo = obtenerGrupoTiempo(proyecto);
@@ -36,49 +57,61 @@ async function actualizarVistaProyectos() {
         grupos[grupo].push(proyecto);
     });
 
-    const ordenGrupos = ["RECIENTES", "HACE 1 DÍA", "HACE 2 DÍAS", "HACE 3 DÍAS", "HACE 4 DÍAS", "HACE 5 DÍAS", "HACE 6 DÍAS", "HACE 1 SEMANA"];
+    return grupos;
+}
 
-    function posicionDeGrupo(nombreGrupo) {
-        const posicionFija = ordenGrupos.indexOf(nombreGrupo);
-        if (posicionFija !== -1) return posicionFija;
-        return ordenGrupos.length + 1;
-    }
+const ordenGruposProyectos = ["RECIENTES", "HACE 1 DÍA", "HACE 2 DÍAS", "HACE 3 DÍAS", "HACE 4 DÍAS", "HACE 5 DÍAS", "HACE 6 DÍAS", "HACE 1 SEMANA"];
 
-    let html = "";
-    const nombresDeGrupos = Object.keys(grupos).sort((a, b) => posicionDeGrupo(a) - posicionDeGrupo(b));
+function posicionDeGrupoProyecto(nombreGrupo) {
+    const posicionFija = ordenGruposProyectos.indexOf(nombreGrupo);
+    if (posicionFija !== -1) return posicionFija;
+    return ordenGruposProyectos.length + 1;
+}
 
-    nombresDeGrupos.forEach(function (nombreGrupo) {
-        html += `<p class="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-3 mt-4">${nombreGrupo}</p>`;
+function generarHTMLProyectos(proyectos) {
+    const grupos = agruparProyectosPorTiempo(proyectos);
+    const nombresDeGrupos = Object.keys(grupos).sort((a, b) => posicionDeGrupoProyecto(a) - posicionDeGrupoProyecto(b));
+    return nombresDeGrupos.map(nombreGrupo => generarHTMLGrupoProyectos(nombreGrupo, grupos[nombreGrupo])).join("");
+}
 
-        html += grupos[nombreGrupo].map(function (proyecto) {
-            return `
-                <div class="bg-gray-800 rounded-2xl p-4 relative mb-3">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <h3 class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</h3>
-                            <p class="text-gray-400 text-xs">${escaparHTML(proyecto.materia_asignatura)}</p>
-                        </div>
-                        <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto('${proyecto.id}')"></i>
-                    </div>
-                    <div id="menu-${proyecto.id}" class="hidden absolute right-4 top-10 bg-gray-700 rounded-xl shadow-lg overflow-hidden z-10">
-                        <button onclick="editarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-white text-sm hover:bg-gray-600">Editar</button>
-                        <button onclick="eliminarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-red-400 text-sm hover:bg-gray-600">Eliminar</button>
-                    </div>
-                    <p class="text-gray-500 text-xs mt-1">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
-                    <p class="text-amber-400 text-xs mt-2"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</p>
+function generarHTMLGrupoProyectos(nombreGrupo, proyectos) {
+    const titulo = `<p class="text-gray-400 text-sm font-semibold uppercase tracking-wider mb-3 mt-4">${nombreGrupo}</p>`;
+    return titulo + proyectos.map(generarHTMLTarjetaProyecto).join("");
+}
+
+function generarHTMLTarjetaProyecto(proyecto) {
+    return `
+        <div class="bg-gray-800 rounded-2xl p-4 relative mb-3">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h3 class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</h3>
+                    <p class="text-gray-400 text-xs">${escaparHTML(proyecto.materia_asignatura)}</p>
                 </div>
-            `;
-        }).join("");
-    });
-
-    listaProyectos.innerHTML = html;
+                <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto('${proyecto.id}')"></i>
+            </div>
+            <div id="menu-${proyecto.id}" class="hidden absolute right-4 top-10 bg-gray-700 rounded-xl shadow-lg overflow-hidden z-10">
+                <button onclick="editarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-white text-sm hover:bg-gray-600">Editar</button>
+                <button onclick="void eliminarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-red-400 text-sm hover:bg-gray-600">Eliminar</button>
+            </div>
+            <p class="text-gray-500 text-xs mt-1">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
+            <p class="text-amber-400 text-xs mt-2"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</p>
+        </div>
+    `;
 }
 
 // Dibuja la lista al cargar la página
+async function iniciarVistaProyectos() {
+    try {
+        await actualizarVistaProyectos();
+    } catch (error) {
+        console.error("No se pudieron cargar los proyectos:", error);
+    }
+}
+
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", actualizarVistaProyectos);
+    document.addEventListener("DOMContentLoaded", iniciarVistaProyectos);
 } else {
-    actualizarVistaProyectos();
+    queueMicrotask(iniciarVistaProyectos);
 }
 
 // Abre/cierra el menu de tres puntos de un proyecto especifico
@@ -115,6 +148,10 @@ async function editarProyecto(id) {
         return;
     }
 
+    mostrarFormularioEdicionProyecto(id, proyecto);
+}
+
+function mostrarFormularioEdicionProyecto(id, proyecto) {
     idProyectoAEditar = id;
     document.getElementById("inputEditarNombre").value = proyecto.nombre;
     document.getElementById("inputEditarDesarrolladoPor").value = proyecto.desarrollado_por;
@@ -140,46 +177,64 @@ if (btnCerrarModalEditar) {
     btnCerrarModalEditar.addEventListener("click", cerrarModalEditar);
     document.getElementById("btnCancelarEditar").addEventListener("click", cerrarModalEditar);
 
-        document.getElementById("btnConfirmarEditar").addEventListener("click", async function () {
-        const nombre = document.getElementById("inputEditarNombre").value.trim();
-        const desarrolladoPor = document.getElementById("inputEditarDesarrolladoPor").value.trim();
-        const materia = document.getElementById("inputEditarMateria").value.trim();
-        const fechaLimite = document.getElementById("inputEditarFechaLimite").value;
+    document.getElementById("btnConfirmarEditar").addEventListener("click", confirmarEdicionProyecto);
+}
 
-        if (nombre === "" || desarrolladoPor === "" || materia === "" || fechaLimite === "") {
-            alert("Por favor, llena todos los campos");
-            return;
+function obtenerDatosFormularioEdicion() {
+    return {
+        nombre: document.getElementById("inputEditarNombre").value.trim(),
+        desarrolladoPor: document.getElementById("inputEditarDesarrolladoPor").value.trim(),
+        materia: document.getElementById("inputEditarMateria").value.trim(),
+        fechaLimite: document.getElementById("inputEditarFechaLimite").value
+    };
+}
+
+function validarDatosProyecto(datos, fechaOriginal) {
+    if (datos.nombre === "" || datos.desarrolladoPor === "" || datos.materia === "" || datos.fechaLimite === "") {
+        alert("Por favor, llena todos los campos");
+        return false;
+    }
+
+    if (datos.fechaLimite !== fechaOriginal && datos.fechaLimite < new Date().toLocaleDateString("en-CA")) {
+        alert("La fecha límite no puede ser anterior a hoy");
+        return false;
+    }
+
+    return true;
+}
+
+async function confirmarEdicionProyecto() {
+    const datos = obtenerDatosFormularioEdicion();
+    if (!validarDatosProyecto(datos, fechaLimiteOriginal)) return;
+
+    const guardado = await guardarCambiosProyecto(datos);
+    if (!guardado) return;
+
+    cerrarModalEditar();
+    await actualizarVistaProyectos();
+}
+
+async function guardarCambiosProyecto(datos) {
+    const { error } = await clienteSupabase
+        .from("proyectos")
+        .update({
+            nombre: datos.nombre,
+            desarrollado_por: datos.desarrolladoPor,
+            materia_asignatura: datos.materia,
+            fecha_limite: datos.fechaLimite
+        })
+        .eq("id", idProyectoAEditar);
+
+    if (error) {
+        if (error.code === "23505") {
+            alert("Ya tienes un proyecto con ese nombre. Elige otro.");
+        } else {
+            alert("No se pudo guardar: " + error.message);
         }
+        return false;
+    }
 
-        // Solo se valida contra hoy si el usuario cambió la fecha
-        const hoy = new Date().toLocaleDateString("en-CA");
-        if (fechaLimite !== fechaLimiteOriginal && fechaLimite < hoy) {
-            alert("La fecha límite no puede ser anterior a hoy");
-            return;
-        }
-
-        const { error } = await clienteSupabase
-            .from("proyectos")
-            .update({
-                nombre: nombre,
-                desarrollado_por: desarrolladoPor,
-                materia_asignatura: materia,
-                fecha_limite: fechaLimite
-            })
-            .eq("id", idProyectoAEditar);
-
-        if (error) {
-            if (error.code === "23505") {
-                alert("Ya tienes un proyecto con ese nombre. Elige otro.");
-            } else {
-                alert("No se pudo guardar: " + error.message);
-            }
-            return;
-        }
-
-        cerrarModalEditar();
-        actualizarVistaProyectos();
-    });
+    return true;
 }
 
 // Elimina un proyecto con confirmacion previa
@@ -194,7 +249,7 @@ async function eliminarProyecto(id) {
         return;
     }
 
-    actualizarVistaProyectos();
+    await actualizarVistaProyectos();
 }
 
 // Modal Nuevo Proyecto (abrir/cerrar) ---
@@ -202,6 +257,11 @@ const btnNuevoProyecto = document.getElementById("btnNuevoProyecto");
 const modalNuevoProyecto = document.getElementById("modalNuevoProyecto");
 const btnCerrarModal = document.getElementById("btnCerrarModal");
 const btnCancelarProyecto = document.getElementById("btnCancelarProyecto");
+
+function cerrarModalNuevoProyecto() {
+    modalNuevoProyecto.classList.add("hidden");
+    modalNuevoProyecto.classList.remove("flex");
+}
 
 if (btnNuevoProyecto) {
     const clavePosicionBoton = "posicionBotonNuevoProyecto";
@@ -253,7 +313,7 @@ if (btnNuevoProyecto) {
     });
 
     btnNuevoProyecto.addEventListener("pointermove", function (evento) {
-        if (!inicioArrastre || evento.pointerId !== inicioArrastre.pointerId) return;
+        if (evento.pointerId !== inicioArrastre?.pointerId) return;
 
         const deltaX = evento.clientX - inicioArrastre.startX;
         const deltaY = evento.clientY - inicioArrastre.startY;
@@ -268,7 +328,7 @@ if (btnNuevoProyecto) {
     });
 
     function terminarArrastre(evento) {
-        if (!inicioArrastre || evento.pointerId !== inicioArrastre.pointerId) return;
+        if (evento.pointerId !== inicioArrastre?.pointerId) return;
 
         arrastreReciente = inicioArrastre.seMovio;
         inicioArrastre = null;
@@ -296,61 +356,64 @@ if (btnNuevoProyecto) {
         modalNuevoProyecto.classList.add("flex");
     });
 
-    function cerrarModal() {
-        modalNuevoProyecto.classList.add("hidden");
-        modalNuevoProyecto.classList.remove("flex");
-    }
-
-    btnCerrarModal.addEventListener("click", cerrarModal);
-    btnCancelarProyecto.addEventListener("click", cerrarModal);
+    btnCerrarModal.addEventListener("click", cerrarModalNuevoProyecto);
+    btnCancelarProyecto.addEventListener("click", cerrarModalNuevoProyecto);
 }
 
 const btnCrearProyecto = document.getElementById("btnCrearProyecto");
 
 if (btnCrearProyecto) {
-    btnCrearProyecto.addEventListener("click", async function () {
-        // .trim() en los tres campos de texto
-        const nombre = document.getElementById("inputNombreProyecto").value.trim();
-        const desarrolladoPor = document.getElementById("inputDesarrolladoPor").value.trim();
-        const materia = document.getElementById("inputMateria").value.trim();
-        const fechaLimite = document.getElementById("inputFechaLimite").value;
-
-        if (nombre === "" || desarrolladoPor === "" || materia === "" || fechaLimite === "") {
-            alert("Por favor, llena todos los campos");
-            return;
-        }
-
-        const hoy = new Date().toLocaleDateString("en-CA");
-        if (fechaLimite < hoy) {
-            alert("La fecha límite no puede ser anterior a hoy");
-            return;
-        }
-
-        const { error } = await clienteSupabase.from("proyectos").insert({
-            nombre: nombre,
-            desarrollado_por: desarrolladoPor,
-            materia_asignatura: materia,
-            fecha_limite: fechaLimite
-        });
-
-        // Mensaje si el nombre se repite
-        if (error) {
-            if (error.code === "23505") {
-                alert("Ya tienes un proyecto con ese nombre. Elige otro.");
-            } else {
-                alert("No se pudo crear el proyecto: " + error.message);
-            }
-            return;
-        }
-
-        document.getElementById("inputNombreProyecto").value = "";
-        document.getElementById("inputDesarrolladoPor").value = "";
-        document.getElementById("inputMateria").value = "";
-        document.getElementById("inputFechaLimite").value = "";
-
-        cerrarModal();
-        actualizarVistaProyectos();
+    btnCrearProyecto.addEventListener("click", function () {
+        void crearProyecto();
     });
+}
+
+function obtenerDatosFormularioNuevoProyecto() {
+    return {
+        nombre: document.getElementById("inputNombreProyecto").value.trim(),
+        desarrolladoPor: document.getElementById("inputDesarrolladoPor").value.trim(),
+        materia: document.getElementById("inputMateria").value.trim(),
+        fechaLimite: document.getElementById("inputFechaLimite").value
+    };
+}
+
+async function crearProyecto() {
+    const datos = obtenerDatosFormularioNuevoProyecto();
+    if (!validarDatosProyecto(datos, "")) return;
+
+    const creado = await guardarNuevoProyecto(datos);
+    if (!creado) return;
+
+    limpiarFormularioNuevoProyecto();
+    cerrarModalNuevoProyecto();
+    await actualizarVistaProyectos();
+}
+
+async function guardarNuevoProyecto(datos) {
+    const { error } = await clienteSupabase.from("proyectos").insert({
+        nombre: datos.nombre,
+        desarrollado_por: datos.desarrolladoPor,
+        materia_asignatura: datos.materia,
+        fecha_limite: datos.fechaLimite
+    });
+
+    if (error) {
+        if (error.code === "23505") {
+            alert("Ya tienes un proyecto con ese nombre. Elige otro.");
+        } else {
+            alert("No se pudo crear el proyecto: " + error.message);
+        }
+        return false;
+    }
+
+    return true;
+}
+
+function limpiarFormularioNuevoProyecto() {
+    document.getElementById("inputNombreProyecto").value = "";
+    document.getElementById("inputDesarrolladoPor").value = "";
+    document.getElementById("inputMateria").value = "";
+    document.getElementById("inputFechaLimite").value = "";
 }
 
 function obtenerGrupoTiempo(proyecto) {
@@ -381,4 +444,3 @@ function formatearFechaLimite(fecha) {
     const partes = fecha.split("-");
     return partes[2] + "/" + partes[1] + "/" + partes[0];
 }
-//https://vscode.dev/github/Sango65/App_Oraganizadora_Web/blob/dev/JS/proyectos.js
