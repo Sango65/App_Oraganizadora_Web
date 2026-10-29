@@ -21,7 +21,7 @@ async function cargarProyectos() {
     // RLS ya filtra: solo llegan los proyectos del usuario con sesión activa
     const { data: proyectos, error } = await clienteSupabase
         .from("proyectos")
-        .select("*")
+        .select("*, fases(id, tareas(id, completada))")
         .order("creado_en", { ascending: false });
 
     if (error) {
@@ -33,10 +33,30 @@ async function cargarProyectos() {
 }
 
 function actualizarContadoresProyectos(proyectos) {
-    const terminados = proyectos.filter(p => p.terminado === true).length;
+    const terminados = proyectos.filter(p => calcularProgresoProyecto(p).terminado).length;
     const enCurso = proyectos.length - terminados;
     document.getElementById("contadorTerminados").textContent = terminados;
     document.getElementById("contadorEnCurso").textContent = enCurso;
+}
+
+// Cuenta las tareas del proyecto y decide si está terminado
+function calcularProgresoProyecto(proyecto) {
+    let total = 0;
+    let completadas = 0;
+
+    (proyecto.fases || []).forEach(function (fase) {
+        (fase.tareas || []).forEach(function (tarea) {
+            total++;
+            if (tarea.completada) completadas++;
+        });
+    });
+
+    return {
+        total: total,
+        completadas: completadas,
+        porcentaje: total === 0 ? 0 : Math.round((completadas / total) * 100),
+        terminado: total > 0 && completadas === total
+    };
 }
 
 function mostrarEstadoVacioProyectos(estadoVacio, listaProyectos) {
@@ -79,22 +99,52 @@ function generarHTMLGrupoProyectos(nombreGrupo, proyectos) {
     return titulo + proyectos.map(generarHTMLTarjetaProyecto).join("");
 }
 
+function generarHTMLBadgeEstado(progreso) {
+    if (progreso.terminado) {
+        return '<span class="text-[10px] px-2 py-0.5 rounded-full border border-green-500 text-green-400">Terminado</span>';
+    }
+    return '<span class="text-[10px] px-2 py-0.5 rounded-full border border-red-500 text-red-400">En curso</span>';
+}
+
+function generarHTMLProgresoTareas(progreso) {
+    const textoConteo = progreso.total === 0 ? "Sin tareas todavía" : progreso.completadas + "/" + progreso.total;
+    const colorBarra = progreso.terminado ? "bg-green-500" : "bg-red-500";
+
+    return `
+        <div class="mt-3">
+            <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-gray-400">Progreso de tareas</span>
+                <span class="text-white font-semibold">${textoConteo}</span>
+            </div>
+            <div class="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div class="h-full ${colorBarra} rounded-full" style="width: ${progreso.porcentaje}%"></div>
+            </div>
+        </div>
+    `;
+}
+
 function generarHTMLTarjetaProyecto(proyecto) {
+    const progreso = calcularProgresoProyecto(proyecto);
+
     return `
         <div class="bg-gray-800 rounded-2xl p-4 relative mb-3">
             <div class="flex items-start justify-between">
-                <div>
-                    <h3 class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</h3>
+                <div class="min-w-0 pr-2">
+                    <h3 class="text-white font-semibold break-words">${escaparHTML(proyecto.nombre)}</h3>
                     <p class="text-gray-400 text-xs">${escaparHTML(proyecto.asignatura_carrera)}</p>
                 </div>
-                <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto('${proyecto.id}')"></i>
+                <div class="flex items-center gap-2">
+                    ${generarHTMLBadgeEstado(progreso)}
+                    <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto('${proyecto.id}')"></i>
+                </div>
             </div>
             <div id="menu-${proyecto.id}" class="hidden absolute right-4 top-10 bg-gray-700 rounded-xl shadow-lg overflow-hidden z-10">
                 <button onclick="editarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-white text-sm hover:bg-gray-600">Editar</button>
                 <button onclick="void eliminarProyecto('${proyecto.id}')" class="block w-full text-left px-4 py-2 text-red-400 text-sm hover:bg-gray-600">Eliminar</button>
             </div>
-            <p class="text-gray-500 text-xs mt-1">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
-            <p class="text-amber-400 text-xs mt-2"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</p>
+            ${generarHTMLProgresoTareas(progreso)}
+            <p class="text-gray-500 text-xs mt-3">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
+            <p class="text-amber-400 text-xs mt-1"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</p>
         </div>
     `;
 }
@@ -259,6 +309,7 @@ const btnCerrarModal = document.getElementById("btnCerrarModal");
 const btnCancelarProyecto = document.getElementById("btnCancelarProyecto");
 
 function cerrarModalNuevoProyecto() {
+    limpiarFormularioNuevoProyecto();
     modalNuevoProyecto.classList.add("hidden");
     modalNuevoProyecto.classList.remove("flex");
 }
@@ -373,7 +424,8 @@ function obtenerDatosFormularioNuevoProyecto() {
         nombre: document.getElementById("inputNombreProyecto").value.trim(),
         desarrolladoPor: document.getElementById("inputDesarrolladoPor").value.trim(),
         materia: document.getElementById("inputMateria").value.trim(),
-        fechaLimite: document.getElementById("inputFechaLimite").value
+        fechaLimite: document.getElementById("inputFechaLimite").value,
+        plantilla: obtenerClavePlantillaElegida()
     };
 }
 
@@ -381,21 +433,32 @@ async function crearProyecto() {
     const datos = obtenerDatosFormularioNuevoProyecto();
     if (!validarDatosProyecto(datos, "")) return;
 
-    const creado = await guardarNuevoProyecto(datos);
-    if (!creado) return;
+    // Se desactiva el botón para que un doble clic no cree el proyecto dos veces
+    btnCrearProyecto.disabled = true;
+    try {
+        const creado = await guardarNuevoProyecto(datos);
+        if (!creado) return;
 
-    limpiarFormularioNuevoProyecto();
-    cerrarModalNuevoProyecto();
-    await actualizarVistaProyectos();
+        limpiarFormularioNuevoProyecto();
+        cerrarModalNuevoProyecto();
+        await actualizarVistaProyectos();
+    } finally {
+        btnCrearProyecto.disabled = false;
+    }
 }
 
 async function guardarNuevoProyecto(datos) {
-    const { error } = await clienteSupabase.from("proyectos").insert({
-        nombre: datos.nombre,
-        desarrollado_por: datos.desarrolladoPor,
-        asignatura_carrera: datos.materia,
-        fecha_limite: datos.fechaLimite
-    });
+    // .select("id").single() devuelve el id del proyecto recién creado
+    const { data: proyecto, error } = await clienteSupabase
+        .from("proyectos")
+        .insert({
+            nombre: datos.nombre,
+            desarrollado_por: datos.desarrolladoPor,
+            asignatura_carrera: datos.materia,
+            fecha_limite: datos.fechaLimite
+        })
+        .select("id")
+        .single();
 
     if (error) {
         if (error.code === "23505") {
@@ -403,6 +466,54 @@ async function guardarNuevoProyecto(datos) {
         } else {
             alert("No se pudo crear el proyecto: " + error.message);
         }
+        return false;
+    }
+
+    // En blanco: no hay plantilla, el proyecto queda sin fases
+    const plantilla = PLANTILLAS[datos.plantilla];
+    if (!plantilla) return true;
+
+    const copiada = await copiarPlantillaAlProyecto(proyecto.id, plantilla);
+    if (!copiada) {
+        // Si falló la copia, se borra el proyecto para no dejarlo a medias
+        await clienteSupabase.from("proyectos").delete().eq("id", proyecto.id);
+        alert("No se pudo copiar la plantilla, así que el proyecto no se creó. Intenta de nuevo.");
+        return false;
+    }
+
+    return true;
+}
+
+// Copia las fases y tareas de la plantilla a la base de datos
+async function copiarPlantillaAlProyecto(proyectoId, plantilla) {
+    const filasFases = plantilla.fases.map(function (fase, indice) {
+        return { proyecto_id: proyectoId, nombre: fase.nombre, orden: indice };
+    });
+
+    const { data: fasesCreadas, error: errorFases } = await clienteSupabase
+        .from("fases")
+        .insert(filasFases)
+        .select("id, orden");
+
+    if (errorFases) {
+        console.error("No se pudieron crear las fases:", errorFases);
+        return false;
+    }
+
+    // Cada fase creada trae su id; con su orden se sabe qué tareas le tocan
+    const filasTareas = [];
+    fasesCreadas.forEach(function (faseCreada) {
+        plantilla.fases[faseCreada.orden].tareas.forEach(function (descripcion, indice) {
+            filasTareas.push({ fase_id: faseCreada.id, descripcion: descripcion, orden: indice });
+        });
+    });
+
+    if (filasTareas.length === 0) return true;
+
+    const { error: errorTareas } = await clienteSupabase.from("tareas").insert(filasTareas);
+
+    if (errorTareas) {
+        console.error("No se pudieron crear las tareas:", errorTareas);
         return false;
     }
 
@@ -414,6 +525,9 @@ function limpiarFormularioNuevoProyecto() {
     document.getElementById("inputDesarrolladoPor").value = "";
     document.getElementById("inputMateria").value = "";
     document.getElementById("inputFechaLimite").value = "";
+    selectTipoProyecto.value = "";
+    selectSubtipoIntegrador.value = "";
+    actualizarSelectorPlantilla();
 }
 
 function obtenerGrupoTiempo(proyecto) {
@@ -443,4 +557,52 @@ function formatearFechaLimite(fecha) {
     if (!fecha) return "Sin fecha";
     const partes = fecha.split("-");
     return partes[2] + "/" + partes[1] + "/" + partes[0];
+}
+
+
+// --- Selector de plantilla en "Nuevo proyecto" ---
+const selectTipoProyecto = document.getElementById("selectTipoProyecto");
+const selectSubtipoIntegrador = document.getElementById("selectSubtipoIntegrador");
+const contenedorSubtipo = document.getElementById("contenedorSubtipo");
+const textoResumenPlantilla = document.getElementById("resumenPlantilla");
+
+// Devuelve la clave de la plantilla elegida ("" = en blanco)
+function obtenerClavePlantillaElegida() {
+    if (selectTipoProyecto.value === "integrador") return selectSubtipoIntegrador.value;
+    return selectTipoProyecto.value;
+}
+
+// Muestra u oculta el submenú de integrador y actualiza el texto de resumen
+function actualizarSelectorPlantilla() {
+    const esIntegrador = selectTipoProyecto.value === "integrador";
+    contenedorSubtipo.classList.toggle("hidden", !esIntegrador);
+    if (!esIntegrador) selectSubtipoIntegrador.value = "";
+
+    const plantilla = PLANTILLAS[obtenerClavePlantillaElegida()];
+    if (!plantilla) {
+        textoResumenPlantilla.textContent = "Sin fases ni tareas: las crearás tú.";
+        return;
+    }
+
+    const totalFases = plantilla.fases.length;
+    const totalTareas = plantilla.fases.reduce((suma, fase) => suma + fase.tareas.length, 0);
+    textoResumenPlantilla.textContent = "Incluye " + totalFases + " fases y " + totalTareas + " tareas que podrás renombrar o eliminar.";
+}
+
+// Abre el segundo selector solo, para que el usuario no tenga que tocarlo
+function abrirSelectorSubtipo() {
+    selectSubtipoIntegrador.focus();
+    try {
+        selectSubtipoIntegrador.showPicker();
+    } catch (error) {
+        // Algunos navegadores no dejan abrirlo solos: queda enfocado y el usuario lo toca
+    }
+}
+
+if (selectTipoProyecto) {
+    selectTipoProyecto.addEventListener("change", function () {
+        actualizarSelectorPlantilla();
+        if (selectTipoProyecto.value === "integrador") abrirSelectorSubtipo();
+    });
+    selectSubtipoIntegrador.addEventListener("change", actualizarSelectorPlantilla);
 }

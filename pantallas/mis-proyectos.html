@@ -73,7 +73,7 @@
 
       <!-- Modal: Nuevo proyecto (oculto por defecto) -->
         <div id="modalNuevoProyecto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-end justify-center z-50">
-            <div class="w-full max-w-sm bg-gray-800 rounded-t-2xl p-5">
+            <div class="w-full max-w-sm bg-gray-800 rounded-t-2xl p-5 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-white font-semibold">Nuevo proyecto</h2>
                     <i class="ti ti-x text-gray-400 cursor-pointer" id="btnCerrarModal"></i>
@@ -91,6 +91,29 @@
                 <label for="inputFechaLimite" class="text-gray-400 text-xs uppercase tracking-wide">Fecha límite de entrega</label>
                 <input type="date" id="inputFechaLimite" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none [color-scheme:dark]">
                 
+                <label for="selectTipoProyecto" class="text-gray-400 text-xs uppercase tracking-wide">Tipo de proyecto</label>
+                <select id="selectTipoProyecto" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none [color-scheme:dark]">
+                    <option value="">En blanco</option>
+                    <option value="resumen">Resumen</option>
+                    <option value="exposicion">Exposición</option>
+                    <option value="reporte_tecnico">Reporte técnico</option>
+                    <option value="integrador">Proyecto integrador</option>
+                </select>
+
+                <div id="contenedorSubtipo" class="hidden">
+                    <label for="selectSubtipoIntegrador" class="text-gray-400 text-xs uppercase tracking-wide">Tipo de proyecto integrador</label>
+                    <select id="selectSubtipoIntegrador" class="w-full bg-gray-900 text-white text-sm rounded-lg px-3 py-2 mt-1 mb-3 outline-none [color-scheme:dark]">
+                        <option value="">Integrador en blanco</option>
+                        <option value="integrador_tecnologico">Tecnológico</option>
+                        <option value="integrador_automatizacion">Automatización e ingeniería</option>
+                        <option value="integrador_mejora_procesos">Mejora de procesos</option>
+                        <option value="integrador_plan_negocios">Plan de negocios</option>
+                        <option value="integrador_experimental">Experimental / laboratorio</option>
+                    </select>
+                </div>
+
+                <p id="resumenPlantilla" class="text-gray-500 text-xs mb-3">Sin fases ni tareas: las crearás tú.</p>
+
                 <div class="flex gap-2">
                     <button id="btnCancelarProyecto" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
                     <button id="btnCrearProyecto" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Crear</button>
@@ -142,6 +165,7 @@
     </output>
     <script src="../JS/utilidades.js"></script>
     <script src="../JS/sesion.js"></script>
+    <script src="../JS/plantillas.js"></script>
     <script src="../JS/proyectos.js"></script>
 </body>
 </html>
