@@ -85,7 +85,7 @@ function generarHTMLTarjetaProyecto(proyecto) {
             <div class="flex items-start justify-between">
                 <div>
                     <h3 class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</h3>
-                    <p class="text-gray-400 text-xs">${escaparHTML(proyecto.materia_asignatura)}</p>
+                    <p class="text-gray-400 text-xs">${escaparHTML(proyecto.asignatura_carrera)}</p>
                 </div>
                 <i class="ti ti-dots-vertical text-gray-400 cursor-pointer" onclick="toggleMenuProyecto('${proyecto.id}')"></i>
             </div>
@@ -155,7 +155,7 @@ function mostrarFormularioEdicionProyecto(id, proyecto) {
     idProyectoAEditar = id;
     document.getElementById("inputEditarNombre").value = proyecto.nombre;
     document.getElementById("inputEditarDesarrolladoPor").value = proyecto.desarrollado_por;
-    document.getElementById("inputEditarMateria").value = proyecto.materia_asignatura;
+    document.getElementById("inputEditarMateria").value = proyecto.asignatura_carrera;
     fechaLimiteOriginal = proyecto.fecha_limite || "";
     document.getElementById("inputEditarFechaLimite").value = fechaLimiteOriginal;
 
@@ -220,7 +220,7 @@ async function guardarCambiosProyecto(datos) {
         .update({
             nombre: datos.nombre,
             desarrollado_por: datos.desarrolladoPor,
-            materia_asignatura: datos.materia,
+            asignatura_carrera: datos.materia,
             fecha_limite: datos.fechaLimite
         })
         .eq("id", idProyectoAEditar);
@@ -393,7 +393,7 @@ async function guardarNuevoProyecto(datos) {
     const { error } = await clienteSupabase.from("proyectos").insert({
         nombre: datos.nombre,
         desarrollado_por: datos.desarrolladoPor,
-        materia_asignatura: datos.materia,
+        asignatura_carrera: datos.materia,
         fecha_limite: datos.fechaLimite
     });
 
