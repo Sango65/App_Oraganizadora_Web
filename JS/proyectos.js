@@ -6,6 +6,7 @@ async function actualizarVistaProyectos() {
     if (proyectos === undefined) return;
 
     actualizarContadoresProyectos(proyectos);
+        void actualizarBadgeGuia(proyectos);
 
     const listaProyectos = document.getElementById("listaProyectos");
     if (proyectos.length === 0) {

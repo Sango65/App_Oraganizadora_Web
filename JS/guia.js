@@ -64,7 +64,7 @@ function reconstruirIndices() {
 async function cargarDatos() {
     const { data, error } = await clienteSupabase
         .from("proyectos")
-        .select("id, nombre, fases(id, nombre, orden, tareas(id, descripcion, completada, orden))")
+        .select("id, nombre, avisado_en_guia, visto_en_guia, fases(id, nombre, orden, tareas(id, descripcion, completada, orden))")
         .order("creado_en", { ascending: false });
 
     if (error) return false;
@@ -89,6 +89,56 @@ async function actualizarVistaGuia() {
     }
 
     dibujarVista();
+
+    // Primero se dibuja y después se marca como avisado: si se marcara antes,
+    // el aviso se apagaría sin haberse mostrado
+    void marcarProyectosAvisados();
+}
+
+// Marca como "avisados" los proyectos que el globito ya contó y apaga el globito
+async function marcarProyectosAvisados() {
+    // Si no hay proyectos sin avisar, no se manda ninguna consulta
+    if (!datosProyectos.some(p => p.avisado_en_guia === false)) return;
+
+    const { error } = await clienteSupabase
+        .from("proyectos")
+        .update({ avisado_en_guia: true })
+        .eq("avisado_en_guia", false);
+
+    if (error) {
+        console.error("No se pudo marcar el aviso de Guía:", error);
+        return;
+    }
+
+    datosProyectos.forEach(function (proyecto) {
+        proyecto.avisado_en_guia = true;
+    });
+    void actualizarBadgeGuia(datosProyectos);
+}
+
+// Al abrir una tarjeta nueva se quita su etiqueta NUEVO al instante
+// y se guarda en segundo plano (la tarjeta no espera a la red)
+function marcarProyectoVisto(id) {
+    const proyecto = datosProyectos.find(p => p.id === id);
+    if (!proyecto || proyecto.visto_en_guia) return;
+
+    proyecto.visto_en_guia = true;
+
+    const etiqueta = document.getElementById("nuevo-" + id);
+    if (etiqueta) etiqueta.remove();
+
+    void guardarProyectoVisto(id);
+}
+
+async function guardarProyectoVisto(id) {
+    const { error } = await clienteSupabase
+        .from("proyectos")
+        .update({ visto_en_guia: true })
+        .eq("id", id);
+
+    if (error) {
+        console.error("No se pudo guardar que el proyecto ya se vio:", error);
+    }
 }
 
 // Cambios locales en la caché (para que la pantalla no parpadee con datos viejos)
@@ -171,7 +221,7 @@ function dibujarVista() {
                         <i class="ti ti-folder text-red-500"></i>
                         <div>
                             <p class="text-gray-400 text-xs uppercase">Fases de:</p>
-                            <p class="text-white font-semibold">${escaparHTML(proyecto.nombre)}</p>
+                            <p class="text-white font-semibold">${escaparHTML(proyecto.nombre)}${proyecto.visto_en_guia ? "" : `<span id="nuevo-${proyecto.id}" class="ml-2 align-middle text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white">NUEVO</span>`}</p>
                         </div>
                     </div>
                     <i id="flecha-${proyecto.id}" class="ti ${proyectoAbierto ? "ti-chevron-up" : "ti-chevron-down"} text-gray-400"></i>
@@ -742,6 +792,7 @@ function toggleFasesProyecto(id) {
         abiertos.delete(id);
     } else {
         abiertos.add(id);
+        marcarProyectoVisto(id);
     }
 }
 

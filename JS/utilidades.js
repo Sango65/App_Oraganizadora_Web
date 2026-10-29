@@ -30,3 +30,34 @@ if (indicadorCarga) {
         });
     });
 }
+
+// Globito rojo sobre el ícono de Guía: cuántos proyectos nuevos aún no se han avisado.
+// Si se le pasa la lista de proyectos que la pantalla ya cargó, cuenta ahí mismo
+// y no manda otra consulta; si no, le pregunta a Supabase.
+async function actualizarBadgeGuia(proyectos) {
+    const badge = document.getElementById("badgeGuia");
+    if (!badge) return;
+
+    let cantidad = 0;
+
+    if (Array.isArray(proyectos)) {
+        cantidad = proyectos.filter(p => p.avisado_en_guia === false).length;
+    } else {
+        const { count, error } = await clienteSupabase
+            .from("proyectos")
+            .select("id", { count: "exact", head: true })
+            .eq("avisado_en_guia", false);
+
+        if (!error) cantidad = count || 0;
+    }
+
+    if (cantidad === 0) {
+        badge.classList.add("hidden");
+        badge.classList.remove("flex");
+        return;
+    }
+
+    badge.textContent = cantidad > 99 ? "99+" : String(cantidad);
+    badge.classList.remove("hidden");
+    badge.classList.add("flex");
+}
