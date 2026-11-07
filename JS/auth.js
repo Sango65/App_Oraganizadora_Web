@@ -55,6 +55,68 @@ function marcarRequisito(id, cumplido) {
     }
 }
 
+// --- Validación del dominio del correo (solo en el registro) ---
+// Dominios permitidos: correos generales y el de la universidad.
+// Para permitir otro dominio, agrégalo a esta lista (en minúsculas).
+const DOMINIOS_PERMITIDOS = [
+    "gmail.com", "googlemail.com",
+    "outlook.com", "hotmail.com", "live.com", "msn.com",
+    "yahoo.com", "yahoo.com.mx",
+    "icloud.com", "me.com",
+    "proton.me", "protonmail.com",
+    "ute.edu.mx"
+];
+
+// Limpia el correo (espacios y mayúsculas) y revisa formato y dominio.
+// Devuelve { valido, mensaje, correo } con el correo ya limpio.
+function validarCorreoRegistro(texto) {
+    const correo = texto.trim().toLowerCase();
+
+    if (correo === "") {
+        return { valido: false, mensaje: "Escribe tu correo electrónico", correo: correo };
+    }
+
+    // Formato: algo + @ + dominio con punto, sin espacios y con un solo @
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+        return { valido: false, mensaje: "Escribe un correo válido, por ejemplo nombre@gmail.com", correo: correo };
+    }
+
+    const dominio = correo.split("@")[1];
+
+    if (!DOMINIOS_PERMITIDOS.includes(dominio)) {
+        return {
+            valido: false,
+            mensaje: "Ese dominio no está permitido. Usa un correo de Gmail, Outlook, Hotmail, Yahoo, iCloud, Proton o @ute.edu.mx",
+            correo: correo
+        };
+    }
+
+    return { valido: true, mensaje: "", correo: correo };
+}
+
+// El aviso de error va debajo del campo de correo (existe solo en sign-up.html)
+const inputCorreoRegistro = document.getElementById("inputCorreoRegistro");
+const errorCorreo = document.getElementById("errorCorreo");
+
+function mostrarErrorCorreo(mensaje) {
+    errorCorreo.textContent = mensaje;
+    errorCorreo.classList.remove("hidden");
+    inputCorreoRegistro.setAttribute("aria-invalid", "true");
+    inputCorreoRegistro.parentElement.classList.add("ring-1", "ring-red-500");
+}
+
+function ocultarErrorCorreo() {
+    errorCorreo.classList.add("hidden");
+    errorCorreo.textContent = "";
+    inputCorreoRegistro.removeAttribute("aria-invalid");
+    inputCorreoRegistro.parentElement.classList.remove("ring-1", "ring-red-500");
+}
+
+if (inputCorreoRegistro && errorCorreo) {
+    // El aviso desaparece cuando la persona vuelve a escribir
+    inputCorreoRegistro.addEventListener("input", ocultarErrorCorreo);
+}
+
 // Registro (sign-up.html)
 const btnRegistrarse = document.getElementById("btnRegistrarse")
 
@@ -69,13 +131,23 @@ if (btnRegistrarse) {
             return;
         }
 
+        const resultadoCorreo = validarCorreoRegistro(correo);
+
+        if (!resultadoCorreo.valido) {
+            mostrarErrorCorreo(resultadoCorreo.mensaje);
+            inputCorreoRegistro.focus();
+            return;
+        }
+
+        ocultarErrorCorreo();
+
         if (!validarContraseña(contraseña)) {
             alert("La contraseña debe tener mínimo 8 caracteres con letras y números");
             return;
         }
 
         const { error } = await clienteSupabase.auth.signUp({
-            email: correo,
+            email: resultadoCorreo.correo,
             password: contraseña,
             options: { data: { nombre: nombre } }
         });

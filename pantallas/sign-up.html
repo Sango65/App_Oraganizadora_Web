@@ -30,8 +30,9 @@
             <label class="text-gray-400 text-xs uppercase tracking-wide">Correo Electronico</label>
             <div class="mt-1 flex items-center bg-gray-900 rounded-lg px-3 py-2">
                 <i class="ti ti-mail text-gray-500 mr-2"></i>
-                <input type="email" placeholder="email.usuario@gmail.com" class="bg-transparent text-white text-sm w-full outline-none placeholder-gray-500">
+                <input type="email" id="inputCorreoRegistro" aria-describedby="errorCorreo" placeholder="email.usuario@gmail.com" class="bg-transparent text-white text-sm w-full outline-none placeholder-gray-500">
             </div>
+            <p id="errorCorreo" role="alert" class="hidden text-red-400 text-xs mt-2"></p>
         </div>
 
         <!-- Campo: nombre de usuario -->
