@@ -22,7 +22,7 @@ async function cargarProyectos() {
     // RLS ya filtra: solo llegan los proyectos del usuario con sesión activa
     const { data: proyectos, error } = await clienteSupabase
         .from("proyectos")
-        .select("*, fases(id, tareas(id, completada))")
+        .select("*, fases(id, tareas(id, completada, completada_en))")
         .order("creado_en", { ascending: false });
 
     if (error) {
@@ -44,11 +44,17 @@ function actualizarContadoresProyectos(proyectos) {
 function calcularProgresoProyecto(proyecto) {
     let total = 0;
     let completadas = 0;
+    let ultimaCompletada = null;
 
     (proyecto.fases || []).forEach(function (fase) {
         (fase.tareas || []).forEach(function (tarea) {
             total++;
-            if (tarea.completada) completadas++;
+            if (tarea.completada) {
+                completadas++;
+                if (tarea.completada_en && (!ultimaCompletada || tarea.completada_en > ultimaCompletada)) {
+                    ultimaCompletada = tarea.completada_en;
+                }
+            }
         });
     });
 
@@ -56,7 +62,8 @@ function calcularProgresoProyecto(proyecto) {
         total: total,
         completadas: completadas,
         porcentaje: total === 0 ? 0 : Math.round((completadas / total) * 100),
-        terminado: total > 0 && completadas === total
+        terminado: total > 0 && completadas === total,
+        ultimaCompletada: ultimaCompletada
     };
 }
 
@@ -145,9 +152,66 @@ function generarHTMLTarjetaProyecto(proyecto) {
             </div>
             ${generarHTMLProgresoTareas(progreso)}
             <p class="text-gray-500 text-xs mt-3">Creado: ${new Date(proyecto.creado_en).toLocaleDateString()}</p>
-            <p class="text-amber-400 text-xs mt-1"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</p>
+            ${generarHTMLEstadoVencimiento(proyecto, progreso)}
         </div>
     `;
+}
+
+// Días que faltan para la fecha limite
+function calcularDiasParaVencer(fecha){
+    const partes = fecha.split("-");
+    const limite = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    return Math.round((limite - hoy) / 86400000);
+}
+
+// Etiqueta redondeada con icono
+function generarHTMLPildoraVencimiento(texto, icono, clases){
+    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs ${clases}"><i class="ti ${icono}"></i> ${texto}</span>`;
+}
+
+// Línea de vencimiento de la tarjeta.
+function generarHTMLEstadoVencimiento(proyecto, progreso) {
+    if (!proyecto.fecha_limite) return "";
+
+    let contenido = `<span class="text-amber-400"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</span>`;
+
+    if (progreso.terminado) {
+        if (fueEntregadoTarde(proyecto, progreso)) {
+            contenido += generarHTMLPildoraVencimiento("Entregado tarde", "ti-clock-exclamation", "bg-amber-500/10 text-amber-400 border-amber-500/40");
+        }
+    } else {
+        const dias = calcularDiasParaVencer(proyecto.fecha_limite);
+
+        if (dias < 0) {
+            contenido += generarHTMLPildoraVencimiento("Vencido", "ti-alert-circle", "bg-red-500/10 text-red-400 border-red-500/40");
+        } else if (dias <= 3) {
+            let aviso = "Vence en " + dias + " días";
+            if (dias === 0) aviso = "Vence hoy";
+            if (dias === 1) aviso = "Vence en 1 día";
+            contenido += generarHTMLPildoraVencimiento(aviso, "ti-clock", "bg-orange-500/10 text-orange-400 border-orange-500/40");
+        }
+    }
+
+    return `<div class="flex items-center gap-2 flex-wrap mt-2 text-xs">${contenido}</div>`;
+}
+
+// Convierte una fecha a "AAAA-MM-DD" usando la hora local (no UTC)
+function fechaLocalISO(fecha) {
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    return fecha.getFullYear() + "-" + mes + "-" + dia;
+}
+
+// true si el proyecto está terminado y su última tarea se completó después de la fecha límite
+function fueEntregadoTarde(proyecto, progreso) {
+    return Boolean(
+        progreso.terminado
+        && progreso.ultimaCompletada
+        && proyecto.fecha_limite
+        && fechaLocalISO(new Date(progreso.ultimaCompletada)) > proyecto.fecha_limite
+    );
 }
 
 // Dibuja la lista al cargar la página

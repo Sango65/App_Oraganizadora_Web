@@ -819,7 +819,10 @@ async function toggleTareaCompletada(id, completada) {
 
     const { error } = await clienteSupabase
         .from("tareas")
-        .update({ completada: completada })
+        .update({ 
+            completada: completada,
+            completada_en: completada ? new Date().toISOString() : null
+        })
         .eq("id", id);
 
     if (error) {
