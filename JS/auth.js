@@ -60,10 +60,7 @@ function marcarRequisito(id, cumplido) {
 // Para permitir otro dominio, agrégalo a esta lista (en minúsculas).
 const DOMINIOS_PERMITIDOS = [
     "gmail.com", "googlemail.com",
-    "outlook.com", "hotmail.com", "live.com", "msn.com",
-    "yahoo.com", "yahoo.com.mx",
-    "icloud.com", "me.com",
-    "proton.me", "protonmail.com",
+    "outlook.com", "hotmail.com",
     "ute.edu.mx"
 ];
 
@@ -86,7 +83,7 @@ function validarCorreoRegistro(texto) {
     if (!DOMINIOS_PERMITIDOS.includes(dominio)) {
         return {
             valido: false,
-            mensaje: "Ese dominio no está permitido. Usa un correo de Gmail, Outlook, Hotmail, Yahoo, iCloud, Proton o @ute.edu.mx",
+            mensaje: "Ese dominio no está permitido. Usa un correo de Gmail, Outlook, Hotmail o @ute.edu.mx",
             correo: correo
         };
     }
@@ -149,7 +146,7 @@ if (btnRegistrarse) {
         const { error } = await clienteSupabase.auth.signUp({
             email: resultadoCorreo.correo,
             password: contraseña,
-            options: { data: { nombre: nombre } }
+            options: { data: { nombre: nombre, display_name: nombre } }
         });
 
         if (error) {

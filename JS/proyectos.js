@@ -178,8 +178,8 @@ function generarHTMLEstadoVencimiento(proyecto, progreso) {
     let contenido = `<span class="text-amber-400"><i class="ti ti-calendar"></i> Vencimiento: ${formatearFechaLimite(proyecto.fecha_limite)}</span>`;
 
     if (progreso.terminado) {
-        if (fueEntregadoTarde(proyecto, progreso)) {
-            contenido += generarHTMLPildoraVencimiento("Entregado tarde", "ti-clock-exclamation", "bg-amber-500/10 text-amber-400 border-amber-500/40");
+        if (fueTerminadoTarde(proyecto, progreso)) {
+            contenido += generarHTMLPildoraVencimiento("Terminado tarde", "ti-clock-exclamation", "bg-amber-500/10 text-amber-400 border-amber-500/40");
         }
     } else {
         const dias = calcularDiasParaVencer(proyecto.fecha_limite);
@@ -205,7 +205,7 @@ function fechaLocalISO(fecha) {
 }
 
 // true si el proyecto está terminado y su última tarea se completó después de la fecha límite
-function fueEntregadoTarde(proyecto, progreso) {
+function fueTerminadoTarde(proyecto, progreso) {
     return Boolean(
         progreso.terminado
         && progreso.ultimaCompletada
