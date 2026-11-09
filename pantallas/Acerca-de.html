@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUIO</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script>
+    <script src="../JS/supabase.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="icon" type="image/png" href="../images/Logo.png">
+</head>
+<body class="bg-gray-900 min-h-screen flex flex-col">
+
+    <!-- header -->
+    <div class="p-4 pb-2">
+        <div id="btnCerrarSesion" class="flex items-center gap-2 mb-3 cursor-pointer w-fit">
+            <i class="ti ti-user-circle text-gray-400 text-2xl"></i>
+            <span id="nombreUsuarioHeader" class="text-gray-400 text-base">Usuario</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <h1 class="text-white text-2xl font-semibold">Acerca de</h1>
+            <i class="ti ti-info-circle text-gray-400 text-xl"></i>
+        </div>
+    </div>
+
+    <!-- contenido -->
+    <div class="flex-1 px-4 pb-20 space-y-3">
+
+        <!-- Información de la app -->
+        <div class="bg-gray-800 rounded-2xl p-4">
+            <h2 class="text-white font-semibold text-lg mb-3">Acerca de GUIO</h2>
+
+            <p class="text-gray-400 text-sm mb-1">Desarrollado por: <span class="text-white">Elí y Dany</span></p>
+            <p class="text-gray-400 text-sm mb-1">Versión de la app: <span class="text-white">1.0.0</span></p>
+            <p class="text-gray-400 text-sm">Última actualización: <span class="text-white">08/11/2026</span></p>
+
+            <p class="text-gray-400 text-sm mt-4">
+                Sobre la app: esta app está diseñada para ayudar a los estudiantes a organizar su desarrollo de proyectos escolares.
+            </p>
+        </div>
+
+        <!-- Cómo funciona -->
+        <div class="bg-gray-800 rounded-2xl p-4">
+            <h2 class="text-white font-semibold mb-3">¿Cómo funciona?</h2>
+
+            <div class="flex items-start gap-3 mb-3">
+                <i class="ti ti-folder-plus text-red-500 text-xl"></i>
+                <div>
+                    <p class="text-white text-sm font-medium">1. Crea tu proyecto</p>
+                    <p class="text-gray-400 text-xs">Elige un tipo y se crean fases y tareas de ejemplo, o empieza en blanco.</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3 mb-3">
+                <i class="ti ti-list-check text-red-500 text-xl"></i>
+                <div>
+                    <p class="text-white text-sm font-medium">2. Organízalo en la Guía</p>
+                    <p class="text-gray-400 text-xs">Agrega, renombra o borra fases y tareas, y marca lo que ya terminaste.</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+                <i class="ti ti-chart-bar text-red-500 text-xl"></i>
+                <div>
+                    <p class="text-white text-sm font-medium">3. Sigue tu avance</p>
+                    <p class="text-gray-400 text-xs">Cada tarjeta muestra tu progreso y cuánto falta para la fecha límite.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Qué significan las etiquetas -->
+        <div class="bg-gray-800 rounded-2xl p-4">
+            <h2 class="text-white font-semibold mb-3">¿Qué significan las etiquetas?</h2>
+
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-[10px] shrink-0 whitespace-nowrap px-2 py-0.5 rounded-full border border-red-500 text-red-400">En curso</span>
+                <span class="text-gray-400 text-xs">Aún tiene tareas pendientes.</span>
+            </div>
+
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-[10px] shrink-0 whitespace-nowrap px-2 py-0.5 rounded-full border border-green-500 text-green-400">Terminado</span>
+                <span class="text-gray-400 text-xs">Todas sus tareas están completas.</span>
+            </div>
+
+            <div class="flex items-center gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 shrink-0 whitespace-nowrap px-2 py-0.5 rounded-full border text-xs bg-orange-500/10 text-orange-400 border-orange-500/40"><i class="ti ti-clock"></i> Vence hoy</span>
+                <span class="text-gray-400 text-xs">Faltan 3 días o menos.</span>
+            </div>
+
+            <div class="flex items-center gap-2 mb-2">
+                <span class="inline-flex items-center gap-1 shrink-0 whitespace-nowrap px-2 py-0.5 rounded-full border text-xs bg-red-500/10 text-red-400 border-red-500/40"><i class="ti ti-alert-circle"></i> Vencido</span>
+                <span class="text-gray-400 text-xs">Pasó la fecha límite sin terminar.</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 shrink-0 whitespace-nowrap px-2 py-0.5 rounded-full border text-xs bg-amber-500/10 text-amber-400 border-amber-500/40"><i class="ti ti-clock-exclamation"></i> Terminado tarde</span>
+                <span class="text-gray-400 text-xs">Se terminó después de la fecha límite.</span>
+            </div>
+        </div>
+
+        <!-- Tecnologías -->
+        <div class="bg-gray-800 rounded-2xl p-4">
+            <h2 class="text-white font-semibold mb-3">Tecnologías</h2>
+            <div class="flex flex-wrap gap-2">
+                <span class="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">HTML</span>
+                <span class="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">JavaScript</span>
+                <span class="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">Tailwind CSS</span>
+                <span class="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">Supabase</span>
+                <span class="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">PostgreSQL</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- tab-bar-inferior -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 flex justify-around py-2">
+        <a href="mis-proyectos.html" class="flex flex-col items-center text-gray-400">
+            <i class="ti ti-folder text-xl"></i>
+            <span class="text-xs mt-1">Proyectos</span>
+        </a>
+        <a href="guia-tareas.html" class="flex flex-col items-center text-gray-400">
+            <i class="ti ti-list-check text-xl"></i>
+            <span class="text-xs mt-1">Guía</span>
+        </a>
+        <a href="acerca-de.html" class="flex flex-col items-center text-red-500">
+            <i class="ti ti-info-circle text-xl"></i>
+            <span class="text-xs mt-1">Acerca de</span>
+        </a>
+    </nav>
+
+    <!-- Modal: Confirmar cierre de sesión (oculto por defecto) -->
+    <div id="modalCerrarSesion" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="w-full max-w-sm mx-4 bg-gray-800 rounded-2xl p-5">
+            <h2 class="text-white font-semibold mb-2">Cerrar sesión</h2>
+            <p class="text-gray-400 text-sm mb-5">¿Estás seguro que deseas cerrar sesión?</p>
+
+            <div class="flex gap-2">
+                <button id="btnCancelarCerrarSesion" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
+                <button id="btnConfirmarCerrarSesion" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl">Cerrar sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <output id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" aria-live="polite" aria-label="Cargando pantalla">
+        <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-red-500"></div>
+    </output>
+    <script src="../JS/utilidades.js"></script>
+    <script src="../JS/sesion.js"></script>
+</body>
+</html>
