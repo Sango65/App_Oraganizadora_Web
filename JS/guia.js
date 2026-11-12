@@ -240,24 +240,40 @@ function dibujarVista() {
     actualizarBarra();
 }
 
-// Fase en vista normal: título, flecha y menú ⋮
+// Círculo de la tarea: verde con palomita si está completada, vacío si no
+function htmlCirculoTarea(completada) {
+    if (completada) {
+        return '<span class="w-5 h-5 rounded-full bg-green-500/20 border-2 border-green-500/70 flex items-center justify-center"><i class="ti ti-check text-green-400 text-xs"></i></span>';
+    }
+    return '<span class="w-5 h-5 rounded-full border-2 border-gray-500 block"></span>';
+}
+
+// Fase en vista normal: título, etiqueta "Completa", flecha y menú ⋮
 function htmlFaseNormal(fase, tareas, etiqueta, bloqueada) {
     const abierta = abiertos.has(fase.id);
+    const faseCompleta = tareas.length > 0 && tareas.every(function (tarea) { return tarea.completada; });
 
     const htmlTareas = tareas.map(function (tarea) {
         return `
             <div class="flex items-center gap-2 py-1">
-                <input type="checkbox" ${tarea.completada ? "checked" : ""} onchange="toggleTareaCompletada('${tarea.id}', this.checked)" class="w-4 h-4 accent-red-500 shrink-0">
+                <button onclick="toggleTareaCompletada('${tarea.id}', ${!tarea.completada})" class="w-8 h-8 -ml-1 flex items-center justify-center shrink-0" role="checkbox" aria-checked="${tarea.completada}" aria-label="Marcar tarea como completada">
+                    ${htmlCirculoTarea(tarea.completada)}
+                </button>
                 <span class="flex-1 break-words text-sm ${tarea.completada ? "text-gray-500 line-through" : "text-white"}">${escaparHTML(tarea.descripcion)}</span>
             </div>
         `;
     }).join("");
 
+    const etiquetaCompleta = faseCompleta
+        ? '<span class="inline-flex items-center gap-1 shrink-0 whitespace-nowrap text-[10px] px-2 py-0.5 rounded-full border border-green-500 text-green-400"><i class="ti ti-check"></i> Completa</span>'
+        : "";
+
     return `
         <div class="bg-gray-900 rounded-lg mb-2 overflow-hidden ${bloqueada ? "opacity-40 pointer-events-none" : ""}">
             <div class="flex items-center justify-between pl-3 pr-1 cursor-pointer" onclick="toggleTareasFase('${fase.id}')">
-                <p class="text-white text-sm font-medium py-2">${etiqueta}: ${escaparHTML(fase.nombre)}</p>
-                <div class="flex items-center">
+                <p class="min-w-0 break-words pr-2 text-sm font-medium py-2 ${faseCompleta ? "text-gray-500 line-through" : "text-white"}">${etiqueta}: ${escaparHTML(fase.nombre)}</p>
+                <div class="flex items-center shrink-0">
+                    ${etiquetaCompleta}
                     <i id="flecha-fase-${fase.id}" class="ti ${abierta ? "ti-chevron-up" : "ti-chevron-down"} text-gray-400 text-sm px-1"></i>
                     <button onclick="event.stopPropagation(); abrirMenuFase('${fase.id}', this)" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white" aria-label="Opciones de la fase" aria-haspopup="true">
                         <i class="ti ti-dots-vertical text-lg"></i>
@@ -291,7 +307,7 @@ function htmlFaseRenombrar(fase, tareas, etiqueta) {
         const valor = borradores[tarea.id] !== undefined ? borradores[tarea.id] : tarea.descripcion;
         return `
             <div class="flex items-start gap-2 py-1">
-                <input type="checkbox" disabled ${tarea.completada ? "checked" : ""} class="w-4 h-4 accent-red-500 shrink-0 mt-3 opacity-40">
+                <span class="shrink-0 mt-3 opacity-40">${htmlCirculoTarea(tarea.completada)}</span>
                 <textarea data-id="${tarea.id}" rows="1" maxlength="120" class="${claseCampo(tarea.id)}" style="${ESTILO_CAMPO}" aria-label="Nombre de la tarea">${escaparCampo(valor)}</textarea>
             </div>
         `;
@@ -327,7 +343,7 @@ function htmlFaseEliminar(fase, tareas, etiqueta) {
 
         return `
             <div class="flex items-center gap-2 pl-2 rounded-lg mb-1 ${marcada ? "bg-red-900/40 text-red-300" : "text-white"} ${faseMarcada ? "py-2 pr-2" : ""}">
-                <input type="checkbox" disabled ${tarea.completada ? "checked" : ""} class="w-4 h-4 accent-red-500 shrink-0 opacity-40">
+                <span class="shrink-0 opacity-40">${htmlCirculoTarea(tarea.completada)}</span>
                 <span class="flex-1 break-words text-sm ${marcada ? "line-through" : ""}">${escaparHTML(tarea.descripcion)}</span>
                 ${boton}
             </div>

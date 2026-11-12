@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guía de tareas</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script>
     <script src="../JS/supabase.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" integrity="sha384-hs5SINUk7GPohxRis+rS7grpSWEbtOIJ3sRoseBKg3CDPIKpG55RfSenbvA6ALOt" crossorigin="anonymous">
     <link rel="icon" type="image/png" href="../images/Logo.png">
 </head>
 <body class="bg-gray-900 h-screen flex flex-col overflow-hidden">
@@ -63,6 +63,7 @@
     <div id="modalFase" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
         <div class="w-full max-w-sm mx-4 bg-gray-800 rounded-2xl p-5">
             <h2 class="text-white font-semibold mb-3">Nueva fase</h2>
+            <label for="inputNombreFase" class="sr-only">Nombre de la fase</label>
             <input id="inputNombreFase" type="text" placeholder="Ej. Investigación" class="w-full bg-gray-900 text-white rounded-xl px-3 py-2 mb-4 outline-none">
             <div class="flex gap-2">
                 <button id="btnCancelarFase" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
@@ -75,6 +76,7 @@
     <div id="modalTarea" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
         <div class="w-full max-w-sm mx-4 bg-gray-800 rounded-2xl p-5">
             <h2 class="text-white font-semibold mb-3">Nueva tarea</h2>
+            <label for="inputNombreTarea" class="sr-only">Nombre de la tarea</label>
             <input id="inputNombreTarea" type="text" placeholder="Ej. Definir tema" class="w-full bg-gray-900 text-white rounded-xl px-3 py-2 mb-4 outline-none">
             <div class="flex gap-2">
                 <button id="btnCancelarTarea" class="flex-1 bg-gray-700 text-white py-2 rounded-xl">Cancelar</button>
@@ -96,9 +98,9 @@
         </div>
     </div>
 
-    <div id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" role="status" aria-live="polite" aria-label="Cargando pantalla">
-        <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-red-500"></div>
-    </div>
+    <output id="indicadorCarga" class="hidden fixed inset-0 z-[100] items-center justify-center bg-gray-900/80" aria-live="polite" aria-label="Cargando pantalla">
+        <span class="h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-red-500"></span>
+    </output>
     <script src="../JS/utilidades.js"></script>
     <script src="../JS/sesion.js"></script>
     <script src="../JS/guia.js"></script>
