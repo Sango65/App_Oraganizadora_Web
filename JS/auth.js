@@ -58,11 +58,11 @@ function marcarRequisito(id, cumplido) {
 // --- Validación del dominio del correo (solo en el registro) ---
 // Dominios permitidos: correos generales y el de la universidad.
 // Para permitir otro dominio, agrégalo a esta lista (en minúsculas).
-const DOMINIOS_PERMITIDOS = [
+const DOMINIOS_PERMITIDOS = new Set([
     "gmail.com", "googlemail.com",
     "outlook.com", "hotmail.com",
     "ute.edu.mx"
-];
+]);
 
 // Limpia el correo (espacios y mayúsculas) y revisa formato y dominio.
 // Devuelve { valido, mensaje, correo } con el correo ya limpio.
@@ -74,13 +74,20 @@ function validarCorreoRegistro(texto) {
     }
 
     // Formato: algo + @ + dominio con punto, sin espacios y con un solo @
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+    const partesCorreo = correo.split("@");
+    const dominio = partesCorreo[1] || "";
+    const ultimoPunto = dominio.lastIndexOf(".");
+    if (
+        partesCorreo.length !== 2 ||
+        partesCorreo[0] === "" ||
+        /\s/.test(correo) ||
+        ultimoPunto <= 0 ||
+        ultimoPunto === dominio.length - 1
+    ) {
         return { valido: false, mensaje: "Escribe un correo válido, por ejemplo nombre@gmail.com", correo: correo };
     }
 
-    const dominio = correo.split("@")[1];
-
-    if (!DOMINIOS_PERMITIDOS.includes(dominio)) {
+    if (!DOMINIOS_PERMITIDOS.has(dominio)) {
         return {
             valido: false,
             mensaje: "Ese dominio no está permitido. Usa un correo de Gmail, Outlook, Hotmail o @ute.edu.mx",
