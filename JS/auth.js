@@ -59,8 +59,9 @@ function marcarRequisito(id, cumplido) {
 // Dominios permitidos: correos generales y el de la universidad.
 // Para permitir otro dominio, agrégalo a esta lista (en minúsculas).
 const DOMINIOS_PERMITIDOS = new Set([
-    "gmail.com", "googlemail.com",
-    "outlook.com", "hotmail.com",
+    "gmail.com",
+    "outlook.com", 
+    "hotmail.com",
     "ute.edu.mx"
 ]);
 
